@@ -25,8 +25,13 @@ let selectedReviewRating = 0;
 let myWorkerProfile = null; // logged-in user's worker profile (null if not a worker)
 
 // ── Helpers ──
-function token() { return localStorage.getItem('hn_token'); }
-function currentUser() { try { return JSON.parse(localStorage.getItem('hn_user')); } catch { return null; } }
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  remove(k) { try { localStorage.removeItem(k); } catch {} },
+};
+function token() { return store.get('hn_token'); }
+function currentUser() { try { return JSON.parse(store.get('hn_user')); } catch { return null; } }
 function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() }; }
 function showLoader() { document.getElementById('global-loader').classList.remove('hidden'); }
 function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
@@ -43,8 +48,8 @@ function showToast(msg, type = 'info', duration = 3500) {
 
 function handle401(res) {
   if (res && res.status === 401) {
-    localStorage.removeItem('hn_token');
-    localStorage.removeItem('hn_user');
+    store.remove('hn_token');
+    store.remove('hn_user');
     showPage('login');
     showToast('Session expired. Please log in again.', 'error');
     return true;
@@ -162,8 +167,8 @@ async function verifyOtp() {
   const t = data.data?.accessToken;
   const user = data.data?.user;
   if (res.ok && t) {
-    localStorage.setItem('hn_token', t);
-    localStorage.setItem('hn_user', JSON.stringify(user || {}));
+    store.set('hn_token', t);
+    store.set('hn_user', JSON.stringify(user || {}));
     await afterLogin();
   } else { showLoginToast(data.message || 'Invalid OTP.', 'error'); }
 }
@@ -249,7 +254,7 @@ function goBack() {
 }
 
 function logout() {
-  localStorage.removeItem('hn_token'); localStorage.removeItem('hn_user');
+  store.remove('hn_token'); store.remove('hn_user');
   allWorkers = []; currentLat = null; currentLng = null; selectedCategoryId = '';
   myWorkerProfile = null;
   showPage('login');
@@ -263,7 +268,7 @@ async function getMe() {
   if (!res || !res.ok) return null;
   const data = await res.json();
   const u = data.data || data.user || data;
-  if (u?.id) localStorage.setItem('hn_user', JSON.stringify({ ...(currentUser()||{}), ...u }));
+  if (u?.id) store.set('hn_user', JSON.stringify({ ...(currentUser()||{}), ...u }));
   return u;
 }
 
@@ -321,7 +326,7 @@ async function updateProfile() {
   if (res.ok) {
     const user = currentUser() || {};
     user.name = name;
-    localStorage.setItem('hn_user', JSON.stringify(user));
+    store.set('hn_user', JSON.stringify(user));
     updateNavAvatar();
     showToast('Profile updated!', 'success');
   } else { showToast(data.message || 'Update failed.', 'error'); }
@@ -1130,7 +1135,7 @@ async function uploadWorkerPhoto(input) {
   try {
     const res = await fetch(`${API}/workers/profile/photo`, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('hn_token') || '') },
+      headers: { 'Authorization': 'Bearer ' + (store.get('hn_token') || '') },
       body: form,
     });
     const json = await res.json();
@@ -1435,7 +1440,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await fetch(API + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token() } }).catch(() => null);
     if (res && res.ok) {
       const data = await res.json().catch(() => null);
-      if (data?.data) localStorage.setItem('hn_user', JSON.stringify({ ...(currentUser()||{}), ...data.data }));
+      if (data?.data) store.set('hn_user', JSON.stringify({ ...(currentUser()||{}), ...data.data }));
       updateNavAvatar();
       await checkWorkerStatus();
       showPage('home');
@@ -1443,7 +1448,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       silentGpsLocation();
       initFcm();
     } else {
-      localStorage.removeItem('hn_token'); localStorage.removeItem('hn_user');
+      store.remove('hn_token'); store.remove('hn_user');
       showPage('login');
     }
   } else {
