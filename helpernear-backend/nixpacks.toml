@@ -5,7 +5,7 @@ nixPkgs = ["nodejs"]
 cmds = ["npm install"]
 
 [phases.build]
-cmds = ["npx prisma generate", "npm run build"]
+cmds = ["npx prisma generate", "npm run build", "npx swc prisma/seed.ts -o dist/seed.js"]
 
 [start]
-cmd = "npx prisma db push && node dist/main"
+cmd = "npx prisma db push && node dist/seed.js && node dist/main"

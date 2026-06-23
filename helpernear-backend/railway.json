@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "npx prisma db push && node dist/main",
+    "startCommand": "npx prisma db push && node dist/seed.js && node dist/main",
     "healthcheckPath": "/api/v1/public/stats",
     "restartPolicyType": "ON_FAILURE"
   }
