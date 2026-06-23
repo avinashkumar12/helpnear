@@ -86,7 +86,7 @@
   </footer>
 
   <script>
-    const API = '/api/v1';
+    const API = 'https://helpnear-production.up.railway.app/api/v1';
     const workerId = new URLSearchParams(location.search).get('id');
 
     function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

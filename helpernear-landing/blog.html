@@ -79,7 +79,7 @@
   </footer>
 
   <script>
-    const API = 'http://localhost:3000/api/v1';
+    const API = 'https://helpnear-production.up.railway.app/api/v1';
     const slugParam = new URLSearchParams(location.search).get('slug');
 
     function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

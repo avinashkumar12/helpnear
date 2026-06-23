@@ -2,7 +2,7 @@
    HelperNear Landing Page – app.js
    ═══════════════════════════════════════════ */
 
-const API = '/api/v1';
+const API = 'https://helpnear-production.up.railway.app/api/v1';
 
 function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
