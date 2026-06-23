@@ -1393,7 +1393,7 @@ const TRANSLATIONS = {
   }
 };
 
-let currentLang = localStorage.getItem('hn_lang') || 'en';
+let currentLang = store.get('hn_lang') || 'en';
 
 function t(key) {
   return (TRANSLATIONS[currentLang] || TRANSLATIONS.en)[key] || (TRANSLATIONS.en[key] || key);
@@ -1420,7 +1420,7 @@ function applyTranslations() {
 
 function setLang(lang) {
   currentLang = lang;
-  localStorage.setItem('hn_lang', lang);
+  store.set('hn_lang', lang);
   applyTranslations();
   // Update toggle button state
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
