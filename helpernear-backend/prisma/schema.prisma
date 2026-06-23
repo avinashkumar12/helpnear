@@ -1,0 +1,306 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  WORKER
+  ADMIN
+}
+
+enum WorkerStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+}
+
+enum ComplaintStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String?
+  phone        String   @unique
+  email        String?  @unique
+  passwordHash String?
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true)
+  fcmToken     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  workerProfile WorkerProfile?
+  reviews       Review[]
+  complaints    Complaint[]    @relation("ReporterComplaints")
+  contactLogs   ContactLog[]
+
+  @@map("users")
+}
+
+model WorkerProfile {
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  bio             String?
+  experienceYears Int          @default(0)
+  priceRange      String?
+  status          WorkerStatus @default(OFFLINE)
+  isVerified      Boolean      @default(false)
+  latitude        Float?
+  longitude       Float?
+  photoUrl        String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories  WorkerCategory[]
+  reviews     Review[]
+  complaints  Complaint[]
+  contactLogs ContactLog[]
+
+  @@map("worker_profiles")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  icon      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workers WorkerCategory[]
+
+  @@map("categories")
+}
+
+model WorkerCategory {
+  workerId   String
+  categoryId String
+
+  worker   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  category Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([workerId, categoryId])
+  @@map("worker_categories")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  workerId  String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  worker WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model OtpLog {
+  id        String   @id @default(uuid())
+  phone     String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("otp_logs")
+}
+
+model Setting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @default("")
+  label       String
+  description String?
+  group       String   @default("general")
+  isSecret    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model Complaint {
+  id          String          @id @default(uuid())
+  reporterId  String
+  workerId    String
+  reason      String
+  status      ComplaintStatus @default(PENDING)
+  adminNote   String?
+  resolvedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  reporter User          @relation("ReporterComplaints", fields: [reporterId], references: [id])
+  worker   WorkerProfile @relation(fields: [workerId], references: [id])
+
+  @@map("complaints")
+}
+
+model Banner {
+  id        String   @id @default(uuid())
+  title     String
+  subtitle  String?
+  imageUrl  String?
+  linkUrl   String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("banners")
+}
+
+model Testimonial {
+  id           String   @id @default(uuid())
+  name         String
+  role         String?
+  quote        String
+  rating       Int      @default(5)
+  photoUrl     String?
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  translations Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("testimonials")
+}
+
+model Faq {
+  id           String   @id @default(uuid())
+  question     String
+  answer       String
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  translations Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  adminName String   @default("Admin")
+  action    String
+  target    String?
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@map("activity_logs")
+}
+
+model Announcement {
+  id             String   @id @default(uuid())
+  title          String
+  message        String
+  type           String   @default("INFO")
+  targetAudience String   @default("ALL")
+  isActive       Boolean  @default(true)
+  translations   Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("announcements")
+}
+
+model Coupon {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  description   String?
+  discountType  String    @default("PERCENTAGE")
+  discountValue Float
+  maxUses       Int?
+  usedCount     Int       @default(0)
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("coupons")
+}
+
+model NotificationTemplate {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  type         String   @default("SMS")
+  subject      String?
+  body         String
+  variables    String?
+  isActive     Boolean  @default(true)
+  translations Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("notification_templates")
+}
+
+model Page {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  title        String
+  content      String
+  isActive     Boolean  @default(true)
+  translations Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("pages")
+}
+
+model BlogPost {
+  id           String    @id @default(uuid())
+  slug         String    @unique
+  title        String
+  excerpt      String?
+  content      String
+  coverImage   String?
+  author       String    @default("HelperNear Team")
+  isPublished  Boolean   @default(false)
+  publishedAt  DateTime?
+  translations Json      @default("{}")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("blog_posts")
+}
+
+model ContactLog {
+  id        String        @id @default(uuid())
+  workerId  String
+  worker    WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  channel   String        // 'call' | 'whatsapp'
+  createdAt DateTime      @default(now())
+
+  @@index([workerId])
+  @@index([createdAt])
+  @@map("contact_logs")
+}
+
+model ContactSubmission {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("contact_submissions")
+}

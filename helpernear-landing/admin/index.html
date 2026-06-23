@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelperNear Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet"/>
+  <style>
+    .ql-toolbar { background: var(--bg); border-color: var(--border) !important; border-radius: 8px 8px 0 0; }
+    .ql-container { border-color: var(--border) !important; border-radius: 0 0 8px 8px; background: var(--card-bg); color: var(--text); font-family: inherit; font-size: .9rem; }
+    .ql-editor { min-height: 220px; max-height: 380px; overflow-y: auto; }
+    .ql-editor.ql-blank::before { color: var(--text-muted); font-style: normal; }
+    .ql-snow .ql-stroke { stroke: var(--text-muted); }
+    .ql-snow .ql-fill { fill: var(--text-muted); }
+    .ql-snow .ql-picker { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- Loader Overlay -->
+  <div id="global-loader" class="loader-overlay" style="display:none;">
+    <div class="loader-spinner"></div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="global-toast" class="toast"></div>
+
+  <!-- ===== LOGIN PAGE ===== -->
+  <div id="page-login" class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/assets/logo.svg" alt="HelperNear" style="height:40px;width:auto;display:block;margin-bottom:4px;"/>
+        <p style="margin:0;font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;">Admin Portal</p>
+      </div>
+
+      <h2 class="login-title">Welcome back</h2>
+      <p class="login-sub">Sign in to your admin account</p>
+
+      <div id="login-toast" class="login-toast" style="display:none;"></div>
+
+      <form onsubmit="adminLogin(event)">
+        <div class="form-group">
+          <label for="inp-email">Email Address</label>
+          <div class="input-wrapper">
+            <i data-lucide="mail" class="input-icon"></i>
+            <input type="email" id="inp-email" placeholder="admin@helpernear.com" required autocomplete="email" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inp-password">Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock" class="input-icon"></i>
+            <input type="password" id="inp-password" placeholder="••••••••" required autocomplete="current-password" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary btn-full">
+          <i data-lucide="log-in"></i>
+          <span>Sign In</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN APP ===== -->
+  <div id="page-app" class="app-layout" style="display:none;">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">
+          <img src="/assets/logo-icon.svg" alt="HelperNear" style="height:36px;width:36px;border-radius:8px;"/>
+        </div>
+        <div class="sidebar-brand-text">
+          <div class="sidebar-brand-name">HelperNear</div>
+          <div class="sidebar-brand-sub">Admin Panel</div>
+        </div>
+        <button class="sidebar-close-btn" onclick="toggleSidebar()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group-label">Main</div>
+        <a class="nav-item" id="nav-dashboard" onclick="navTo('dashboard')">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-item" id="nav-people" onclick="navTo('people')">
+          <i data-lucide="users"></i>
+          <span>People</span>
+        </a>
+        <a class="nav-item" id="nav-verification" onclick="navTo('verification')">
+          <i data-lucide="shield-check"></i>
+          <span>Verification Queue</span>
+          <span class="nav-badge" id="nav-badge-verification" style="display:none;"></span>
+        </a>
+        <a class="nav-item" id="nav-reviews" onclick="navTo('reviews')">
+          <i data-lucide="star"></i>
+          <span>Reviews</span>
+        </a>
+
+        <div class="nav-group-label">Content</div>
+        <a class="nav-item" id="nav-categories" onclick="navTo('categories')">
+          <i data-lucide="tag"></i>
+          <span>Categories</span>
+        </a>
+        <a class="nav-item" id="nav-banners" onclick="navTo('banners')">
+          <i data-lucide="image"></i>
+          <span>Banners</span>
+        </a>
+        <a class="nav-item" id="nav-testimonials" onclick="navTo('testimonials')">
+          <i data-lucide="quote"></i>
+          <span>Testimonials</span>
+        </a>
+        <a class="nav-item" id="nav-faqs" onclick="navTo('faqs')">
+          <i data-lucide="help-circle"></i>
+          <span>FAQs</span>
+        </a>
+
+        <div class="nav-group-label">Support</div>
+        <a class="nav-item" id="nav-complaints" onclick="navTo('complaints')">
+          <i data-lucide="alert-triangle"></i>
+          <span>Complaints</span>
+        </a>
+
+        <div class="nav-group-label">Growth</div>
+        <a class="nav-item" id="nav-announcements" onclick="navTo('announcements')">
+          <i data-lucide="megaphone"></i>
+          <span>Announcements</span>
+        </a>
+        <!-- Coupons hidden for now -->
+        <!--<a class="nav-item" id="nav-coupons" onclick="navTo('coupons')">
+          <i data-lucide="ticket"></i>
+          <span>Coupons</span>
+        </a>-->
+
+        <div class="nav-group-label">Website</div>
+        <a class="nav-item" id="nav-pages" onclick="navTo('pages')">
+          <i data-lucide="file-text"></i>
+          <span>Pages</span>
+        </a>
+        <a class="nav-item" id="nav-blog" onclick="navTo('blog')">
+          <i data-lucide="pen-square"></i>
+          <span>Blog</span>
+        </a>
+        <a class="nav-item" id="nav-contact" onclick="navTo('contact')">
+          <i data-lucide="mail"></i>
+          <span>Contact Us</span>
+          <span class="nav-badge" id="nav-badge-contact" style="display:none;"></span>
+        </a>
+
+        <div class="nav-group-label">System</div>
+        <a class="nav-item" id="nav-map" onclick="navTo('map')">
+          <i data-lucide="map-pin"></i>
+          <span>Worker Map</span>
+        </a>
+        <a class="nav-item" id="nav-templates" onclick="navTo('templates')">
+          <i data-lucide="file-text"></i>
+          <span>Msg Templates</span>
+        </a>
+        <a class="nav-item" id="nav-activity" onclick="navTo('activity')">
+          <i data-lucide="activity"></i>
+          <span>Activity Log</span>
+        </a>
+        <a class="nav-item" id="nav-settings" onclick="navTo('settings')">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="admin-avatar" id="admin-avatar">A</div>
+          <div class="admin-profile-info">
+            <div class="admin-profile-name" id="admin-name">Admin</div>
+            <div class="admin-profile-role">Super Admin</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">
+          <i data-lucide="log-out"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content -->
+    <main class="main-area">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <button class="menu-btn" onclick="toggleSidebar()">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-search-wrap" id="topbar-search-wrap">
+          <i data-lucide="search" class="topbar-search-icon"></i>
+          <input type="search" id="global-search-input" class="topbar-search-input"
+            placeholder="Search workers, users…"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+            name="hn-search-nofill"
+            oninput="onGlobalSearch(this.value)"
+            onfocus="showSearchDropdown()"
+            onblur="hideSearchDropdown()" />
+          <div id="search-dropdown" class="search-dropdown hidden"></div>
+        </div>
+        <div class="topbar-right">
+          <span class="live-badge">
+            <span class="live-dot"></span>
+            Live
+          </span>
+          <button class="icon-btn" id="darkModeBtn" onclick="toggleDarkMode()" title="Toggle dark/light mode">
+            <i data-lucide="moon" id="darkModeIcon"></i>
+          </button>
+          <button class="icon-btn topbar-profile-btn" onclick="openAdminProfileModal()" title="Admin profile">
+            <i data-lucide="user-circle"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- ===== DASHBOARD SECTION ===== -->
+      <section id="sec-dashboard" class="section active">
+        <div class="section-header">
+          <div>
+            <h2>Dashboard Overview</h2>
+            <p class="section-sub">Welcome back! Here's what's happening today.</p>
+          </div>
+          <button class="btn-outline" onclick="loadDashboard()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon-wrap">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-totalUsers">—</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+          </div>
+          <div class="stat-card stat-green">
+            <div class="stat-icon-wrap">
+              <i data-lucide="wrench"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-totalWorkers">—</div>
+              <div class="stat-label">Total Workers</div>
+            </div>
+          </div>
+          <div class="stat-card stat-purple">
+            <div class="stat-icon-wrap">
+              <i data-lucide="shield-check"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-verifiedWorkers">—</div>
+              <div class="stat-label">Verified Workers</div>
+            </div>
+          </div>
+          <div class="stat-card stat-orange">
+            <div class="stat-icon-wrap">
+              <i data-lucide="tag"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-totalCategories">—</div>
+              <div class="stat-label">Categories</div>
+            </div>
+          </div>
+          <div class="stat-card stat-red">
+            <div class="stat-icon-wrap">
+              <i data-lucide="alert-triangle"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-pendingComplaints">—</div>
+              <div class="stat-label">Pending Complaints</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trends Chart -->
+        <div class="chart-card chart-card--wide">
+          <div class="chart-card-header">
+            <h3>
+              <i data-lucide="trending-up"></i>
+              New Signups — Last 7 Days
+            </h3>
+          </div>
+          <div class="chart-card-body">
+            <canvas id="trendsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>
+                <i data-lucide="bar-chart-2"></i>
+                Worker Status Breakdown
+              </h3>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="workerStatusChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3>
+                <i data-lucide="pie-chart"></i>
+                Role Distribution
+              </h3>
+            </div>
+            <div class="chart-card-body chart-doughnut-body">
+              <canvas id="roleChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="chart-card chart-card--wide">
+          <div class="chart-card-header">
+            <h3>
+              <i data-lucide="flag"></i>
+              Complaints — Last 7 Days
+            </h3>
+          </div>
+          <div class="chart-card-body">
+            <canvas id="complaintsChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card chart-card--wide">
+          <div class="chart-card-header">
+            <h3>
+              <i data-lucide="layers"></i>
+              Workers by Category
+            </h3>
+          </div>
+          <div class="chart-card-body" style="min-height:240px">
+            <canvas id="categoryWorkersChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== WORKERS SECTION ===== -->
+      <!-- ===== PEOPLE SECTION ===== -->
+      <section id="sec-people" class="section">
+        <div class="section-header">
+          <div>
+            <h2>People</h2>
+            <p class="section-sub">Manage customers and workers on the platform.</p>
+          </div>
+          <button class="btn-outline" onclick="loadPeople()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+        </div>
+
+        <!-- Export buttons -->
+        <div style="display:flex;gap:.6rem;margin-bottom:1rem">
+          <button class="btn-outline btn-sm" onclick="exportPeopleCSV('customers')">
+            <i data-lucide="download"></i> Export Customers
+          </button>
+          <button class="btn-outline btn-sm" onclick="exportPeopleCSV('workers')">
+            <i data-lucide="download"></i> Export Workers
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="people-tabs">
+          <button class="people-tab active" id="tab-customers" onclick="switchPeopleTab('customers')">
+            <i data-lucide="user"></i>
+            Customers
+            <span class="tab-count" id="tab-count-customers">0</span>
+          </button>
+          <button class="people-tab" id="tab-workers" onclick="switchPeopleTab('workers')">
+            <i data-lucide="wrench"></i>
+            Workers
+            <span class="tab-count" id="tab-count-workers">0</span>
+          </button>
+        </div>
+
+        <!-- Customers Tab -->
+        <div id="pane-customers" class="table-card">
+          <div class="table-toolbar">
+            <div class="table-search">
+              <i data-lucide="search"></i>
+              <input type="text" id="customerSearch" placeholder="Search customers..." oninput="filterPeople('customers')" />
+            </div>
+            <div class="toolbar-right">
+              <button class="btn-danger btn-sm" id="bulk-deactivate-customers-btn" style="display:none" onclick="bulkDeactivate('customers')">
+                <i data-lucide="user-x"></i> Deactivate Selected
+              </button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:36px"><input type="checkbox" id="sel-all-customers" onchange="toggleSelectAll('customers')" /></th>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Joined</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="customers-tbody">
+                <tr><td colspan="6" class="table-empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Customers pagination -->
+        <div class="pagination-bar" id="customers-pagination"></div>
+
+        <!-- Workers Tab -->
+        <div id="pane-workers" class="table-card" style="display:none">
+          <div class="table-toolbar">
+            <div class="table-search">
+              <i data-lucide="search"></i>
+              <input type="text" id="workerSearch" placeholder="Search workers..." oninput="filterPeople('workers')" />
+            </div>
+            <div class="toolbar-right">
+              <button class="btn-danger btn-sm" id="bulk-deactivate-workers-btn" style="display:none" onclick="bulkDeactivate('workers')">
+                <i data-lucide="user-x"></i> Deactivate Selected
+              </button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:36px"><input type="checkbox" id="sel-all-workers" onchange="toggleSelectAll('workers')" /></th>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Categories</th>
+                  <th>Verified</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="workers-tbody">
+                <tr><td colspan="7" class="table-empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Workers pagination -->
+          <div class="pagination-bar" id="workers-pagination"></div>
+        </div>
+      </section>
+
+      <!-- ===== CATEGORIES SECTION ===== -->
+      <section id="sec-categories" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Categories</h2>
+            <p class="section-sub">Service categories available on HelperNear.</p>
+          </div>
+          <button class="btn-outline" onclick="loadCategories()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+        </div>
+        <div id="categories-grid" class="categories-grid">
+          <div class="table-empty" style="grid-column:1/-1;padding:3rem;text-align:center;">Loading categories...</div>
+        </div>
+
+        <!-- Floating Add Button -->
+        <button class="fab-btn" onclick="showAddCategoryModal()">
+          <i data-lucide="plus"></i>
+          Add Category
+        </button>
+      </section>
+
+      <!-- ===== VERIFICATION QUEUE SECTION ===== -->
+      <section id="sec-verification" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Verification Queue</h2>
+            <p class="section-sub">Workers awaiting identity verification.</p>
+          </div>
+          <button class="btn-outline" onclick="loadVerification()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-search">
+              <i data-lucide="search"></i>
+              <input type="text" id="verificationSearch" placeholder="Search by name or phone..." oninput="filterVerification()" />
+            </div>
+            <span id="verification-count-label" class="count-badge" style="margin-left:.75rem"></span>
+            <div class="toolbar-right">
+              <button id="bulk-verify-btn" class="btn-primary btn-sm" style="display:none" onclick="bulkVerify()">
+                <i data-lucide="shield-check"></i>
+                <span id="bulk-verify-label">Verify Selected</span>
+              </button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:36px"><input type="checkbox" id="verify-select-all" onchange="toggleSelectAllVerification(this.checked)" /></th>
+                  <th>Worker</th>
+                  <th>Phone</th>
+                  <th>Categories</th>
+                  <th>Experience</th>
+                  <th>Registered</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="verification-tbody">
+                <tr><td colspan="7" class="table-empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== REVIEWS SECTION ===== -->
+      <section id="sec-reviews" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Review Moderation</h2>
+            <p class="section-sub">All customer reviews — remove fake or abusive ones.</p>
+          </div>
+          <button class="btn-outline" onclick="loadReviews()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-search">
+              <i data-lucide="search"></i>
+              <input type="text" id="reviewSearch" placeholder="Search by reviewer or worker..." oninput="filterReviews()" />
+            </div>
+            <div class="toolbar-right">
+              <select id="reviewRatingFilter" class="filter-select" onchange="filterReviews()">
+                <option value="">All ratings</option>
+                <option value="1">★ 1</option>
+                <option value="2">★★ 2</option>
+                <option value="3">★★★ 3</option>
+                <option value="4">★★★★ 4</option>
+                <option value="5">★★★★★ 5</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Reviewer</th>
+                  <th>Worker</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reviews-tbody">
+                <tr><td colspan="6" class="table-empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-bar" id="reviews-pagination"></div>
+        </div>
+      </section>
+
+      <!-- ===== BANNERS SECTION ===== -->
+      <section id="sec-banners" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Banners</h2>
+            <p class="section-sub">Promotional banners shown in the app.</p>
+          </div>
+          <button class="btn-outline" onclick="loadBanners()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+        </div>
+        <div id="banners-list" class="content-list">
+          <div class="table-empty" style="padding:3rem;text-align:center;">Loading banners...</div>
+        </div>
+        <button class="fab-btn" onclick="showBannerModal()">
+          <i data-lucide="plus"></i>
+          Add Banner
+        </button>
+      </section>
+
+      <!-- ===== TESTIMONIALS SECTION ===== -->
+      <section id="sec-testimonials" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Testimonials</h2>
+            <p class="section-sub">Customer reviews shown on the landing page.</p>
+          </div>
+          <button class="btn-outline" onclick="loadTestimonials()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+        </div>
+        <div id="testimonials-list" class="content-list">
+          <div class="table-empty" style="padding:3rem;text-align:center;">Loading testimonials...</div>
+        </div>
+        <button class="fab-btn" onclick="showTestimonialModal()">
+          <i data-lucide="plus"></i>
+          Add Testimonial
+        </button>
+      </section>
+
+      <!-- ===== FAQS SECTION ===== -->
+      <section id="sec-faqs" class="section">
+        <div class="section-header">
+          <div>
+            <h2>FAQs</h2>
+            <p class="section-sub">Frequently asked questions shown on the landing page.</p>
+          </div>
+          <button class="btn-outline" onclick="loadFaqs()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+        </div>
+        <div id="faqs-list" class="content-list">
+          <div class="table-empty" style="padding:3rem;text-align:center;">Loading FAQs...</div>
+        </div>
+        <button class="fab-btn" onclick="showFaqModal()">
+          <i data-lucide="plus"></i>
+          Add FAQ
+        </button>
+      </section>
+
+      <!-- ===== COMPLAINTS SECTION ===== -->
+      <section id="sec-complaints" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Complaints</h2>
+            <p class="section-sub">Manage user-filed complaints and disputes.</p>
+          </div>
+          <div style="display:flex;gap:.6rem">
+            <button class="btn-outline" onclick="exportComplaintsCSV()">
+              <i data-lucide="download"></i>
+              Export CSV
+            </button>
+            <button class="btn-outline" onclick="loadComplaints()">
+              <i data-lucide="refresh-cw"></i>
+              Refresh
+            </button>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="complaint-status-tabs" id="complaint-status-tabs">
+              <button class="status-tab active" data-status="" onclick="setComplaintFilter('')">All</button>
+              <button class="status-tab" data-status="PENDING" onclick="setComplaintFilter('PENDING')">Pending</button>
+              <button class="status-tab" data-status="REVIEWED" onclick="setComplaintFilter('REVIEWED')">Reviewed</button>
+              <button class="status-tab" data-status="RESOLVED" onclick="setComplaintFilter('RESOLVED')">Resolved</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Filed By</th>
+                  <th>Against Worker</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="complaints-tbody">
+                <tr><td colspan="7" class="table-empty">Loading complaints...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-bar" id="complaints-pagination"></div>
+        </div>
+      </section>
+
+      <!-- ===== WORKER MAP SECTION ===== -->
+      <section id="sec-map" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Worker Map</h2>
+            <p class="section-sub">Live positions of all verified workers.</p>
+          </div>
+          <div style="display:flex;gap:.6rem;align-items:center">
+            <select id="map-category-filter" class="filter-select" onchange="filterMap()">
+              <option value="">All Categories</option>
+            </select>
+            <button class="btn-outline" onclick="loadMap()">
+              <i data-lucide="refresh-cw"></i> Refresh
+            </button>
+          </div>
+        </div>
+        <div class="map-legend">
+          <span class="map-legend-item map-legend-available">Available</span>
+          <span class="map-legend-item map-legend-busy">Busy</span>
+          <span class="map-legend-item map-legend-offline">Offline</span>
+        </div>
+        <div id="worker-map" class="worker-map-container"></div>
+      </section>
+
+      <!-- ===== ACTIVITY LOG SECTION ===== -->
+      <section id="sec-activity" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Activity Log</h2>
+            <p class="section-sub">Audit trail of all admin actions.</p>
+          </div>
+          <button class="btn-outline" onclick="loadActivity()">
+            <i data-lucide="refresh-cw"></i> Refresh
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Admin</th>
+                  <th>Action</th>
+                  <th>Target</th>
+                  <th>Details</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="activity-tbody">
+                <tr><td colspan="5" class="table-empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-bar" id="activity-pagination"></div>
+        </div>
+      </section>
+
+      <!-- ===== ANNOUNCEMENTS SECTION ===== -->
+      <section id="sec-announcements" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Announcements</h2>
+            <p class="section-sub">Broadcast messages to users and workers.</p>
+          </div>
+          <button class="btn-outline" onclick="loadAnnouncements()">
+            <i data-lucide="refresh-cw"></i> Refresh
+          </button>
+        </div>
+        <div id="announcements-list" class="content-list">
+          <div class="table-empty" style="padding:3rem;text-align:center;">Loading...</div>
+        </div>
+        <button class="fab-btn" onclick="showAnnouncementModal()">
+          <i data-lucide="plus"></i> New Announcement
+        </button>
+      </section>
+
+      <!-- ===== COUPONS SECTION ===== -->
+      <section id="sec-coupons" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Coupons &amp; Referral Codes</h2>
+            <p class="section-sub">Discount codes with usage limits and expiry.</p>
+          </div>
+          <div style="display:flex;gap:.6rem">
+            <button class="btn-outline" onclick="exportCouponsCSV()">
+              <i data-lucide="download"></i> Export
+            </button>
+            <button class="btn-outline" onclick="loadCoupons()">
+              <i data-lucide="refresh-cw"></i> Refresh
+            </button>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-search">
+              <i data-lucide="search"></i>
+              <input type="text" id="couponSearch" placeholder="Search code..." oninput="filterCoupons()" />
+            </div>
+            <div class="toolbar-right">
+              <select id="couponStatusFilter" class="filter-select" onchange="filterCoupons()">
+                <option value="">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Discount</th>
+                  <th>Used / Max</th>
+                  <th>Expires</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="coupons-tbody">
+                <tr><td colspan="6" class="table-empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-bar" id="coupons-pagination"></div>
+        </div>
+        <button class="fab-btn" onclick="showCouponModal()">
+          <i data-lucide="plus"></i> Add Coupon
+        </button>
+      </section>
+
+      <!-- ===== NOTIFICATION TEMPLATES SECTION ===== -->
+      <section id="sec-templates" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Message Templates</h2>
+            <p class="section-sub">SMS and email templates for OTP, welcome, complaints, etc.</p>
+          </div>
+          <button class="btn-outline" onclick="loadTemplates()">
+            <i data-lucide="refresh-cw"></i> Refresh
+          </button>
+        </div>
+        <div id="templates-list" class="content-list">
+          <div class="table-empty" style="padding:3rem;text-align:center;">Loading templates...</div>
+        </div>
+        <button class="fab-btn" onclick="showTemplateModal()">
+          <i data-lucide="plus"></i> Add Template
+        </button>
+      </section>
+
+      <!-- ===== SETTINGS SECTION ===== -->
+      <section id="sec-settings" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Settings</h2>
+            <p class="section-sub">Configure integrations, OTP behaviour, and app preferences.</p>
+          </div>
+        </div>
+
+        <!-- Branding Card -->
+        <div class="settings-card" id="branding-card">
+          <div class="settings-card-header">
+            <div class="settings-card-icon"><i data-lucide="image"></i></div>
+            <div>
+              <h3>Branding</h3>
+              <p>Upload custom logo variants. SVG, PNG, or WebP. Max 2 MB.</p>
+            </div>
+          </div>
+          <div class="settings-fields">
+            <div class="setting-row logo-upload-row">
+              <div class="setting-info">
+                <label class="setting-label">Main Logo <span style="font-weight:400;font-size:12px;color:var(--text-muted)">(dark background)</span></label>
+                <span class="setting-desc">Used in app nav, landing nav</span>
+              </div>
+              <div class="logo-upload-right">
+                <img id="preview-logo-light" class="logo-preview" src="/assets/logo-light.svg" alt="logo-light"/>
+                <label class="btn-upload-logo" for="input-logo-light"><i data-lucide="upload"></i> Upload</label>
+                <input type="file" id="input-logo-light" accept=".svg,.png,.jpg,.jpeg,.webp" style="display:none" onchange="uploadLogo(this,'logo-light','preview-logo-light')"/>
+              </div>
+            </div>
+            <div class="setting-row logo-upload-row">
+              <div class="setting-info">
+                <label class="setting-label">Main Logo <span style="font-weight:400;font-size:12px;color:var(--text-muted)">(light background)</span></label>
+                <span class="setting-desc">Used on light/white backgrounds</span>
+              </div>
+              <div class="logo-upload-right">
+                <img id="preview-logo" class="logo-preview logo-preview-light" src="/assets/logo.svg" alt="logo"/>
+                <label class="btn-upload-logo" for="input-logo"><i data-lucide="upload"></i> Upload</label>
+                <input type="file" id="input-logo" accept=".svg,.png,.jpg,.jpeg,.webp" style="display:none" onchange="uploadLogo(this,'logo','preview-logo')"/>
+              </div>
+            </div>
+            <div class="setting-row logo-upload-row">
+              <div class="setting-info">
+                <label class="setting-label">App Icon</label>
+                <span class="setting-desc">Used as favicon, sidebar icon, phone mockup</span>
+              </div>
+              <div class="logo-upload-right">
+                <img id="preview-logo-icon" class="logo-preview logo-preview-icon" src="/assets/logo-icon.svg" alt="logo-icon"/>
+                <label class="btn-upload-logo" for="input-logo-icon"><i data-lucide="upload"></i> Upload</label>
+                <input type="file" id="input-logo-icon" accept=".svg,.png,.jpg,.jpeg,.webp" style="display:none" onchange="uploadLogo(this,'logo-icon','preview-logo-icon')"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="settings-container">
+          <div class="settings-loading">Loading settings...</div>
+        </div>
+
+        <!-- FCM / Push Notifications -->
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-header" style="padding:1.25rem 1.5rem .75rem">
+            <h3 style="font-size:1rem;font-weight:700;margin:0">Push Notifications (Firebase FCM)</h3>
+            <p style="font-size:.82rem;color:var(--text-muted);margin:.25rem 0 0">Configure Firebase to send push notifications to workers. Get credentials from Firebase Console → Project Settings → Service Accounts.</p>
+          </div>
+          <div style="padding:0 1.5rem 1.25rem;display:grid;gap:1rem">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div class="form-group" style="margin:0"><label>Project ID</label><input type="text" id="fcm-project-id" placeholder="my-project-123"/></div>
+              <div class="form-group" style="margin:0"><label>Client Email</label><input type="text" id="fcm-client-email" placeholder="firebase-adminsdk@..."/></div>
+            </div>
+            <div class="form-group" style="margin:0"><label>Private Key (service account)</label><textarea id="fcm-private-key" rows="3" placeholder="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n" style="font-family:monospace;font-size:.78rem"></textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div class="form-group" style="margin:0"><label>Web API Key</label><input type="text" id="fcm-api-key" placeholder="AIza..."/></div>
+              <div class="form-group" style="margin:0"><label>App ID</label><input type="text" id="fcm-app-id" placeholder="1:123:web:abc"/></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div class="form-group" style="margin:0"><label>Messaging Sender ID</label><input type="text" id="fcm-sender-id" placeholder="123456789"/></div>
+              <div class="form-group" style="margin:0"><label>VAPID Key (Web Push)</label><input type="text" id="fcm-vapid-key" placeholder="BN..."/></div>
+            </div>
+            <div class="form-group" style="margin:0"><label>Auth Domain</label><input type="text" id="fcm-auth-domain" placeholder="my-project.firebaseapp.com"/></div>
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn-primary" onclick="saveFcmSettings()"><i data-lucide="save"></i> Save FCM Settings</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PAGES SECTION ===== -->
+      <section id="sec-pages" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Pages</h2>
+            <p class="section-sub">Manage static pages: Privacy Policy, Terms, About Us.</p>
+          </div>
+          <button class="btn-primary" onclick="showPageModal()">
+            <i data-lucide="plus"></i> New Page
+          </button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Slug</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead>
+            <tbody id="pages-tbody"><tr><td colspan="5" class="table-empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== BLOG SECTION ===== -->
+      <section id="sec-blog" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Blog</h2>
+            <p class="section-sub">Write and publish blog posts for your website.</p>
+          </div>
+          <button class="btn-primary" onclick="showBlogModal()">
+            <i data-lucide="plus"></i> New Post
+          </button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Slug</th><th>Author</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="blog-tbody"><tr><td colspan="6" class="table-empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== CONTACT SECTION ===== -->
+      <section id="sec-contact" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Contact Us</h2>
+            <p class="section-sub">View messages sent through the website contact form.</p>
+          </div>
+          <div style="display:flex;gap:.6rem">
+            <button class="btn-outline" onclick="loadContact()">
+              <i data-lucide="refresh-cw"></i> Refresh
+            </button>
+          </div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="contact-tbody"><tr><td colspan="6" class="table-empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="contact-pagination"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===== PAGE MODAL ===== -->
+  <div id="pageModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closePageModal()">
+    <div class="modal-box" style="max-width:700px;width:94%">
+      <div class="modal-header">
+        <h3 id="page-modal-title">New Page</h3>
+        <button class="modal-close-btn" onclick="closePageModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="page-edit-id"/>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Slug (URL path)</label>
+            <input type="text" id="page-slug" placeholder="e.g. privacy-policy"/>
+          </div>
+          <div class="form-group toggle-row" style="align-items:flex-end">
+            <div><div class="toggle-label">Active</div><div class="toggle-sub">Publicly visible</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="page-active" checked/><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="lang-tabs">
+          <button class="lang-tab-btn active" onclick="switchLangTab('page','en',this)"><span class="lang-flag">🇬🇧</span> English</button>
+          <button class="lang-tab-btn" onclick="switchLangTab('page','hi',this)"><span class="lang-flag">🇮🇳</span> Hindi</button>
+        </div>
+        <div id="page-lang-en" class="lang-panel active">
+          <div class="form-group"><label>Page Title (EN)</label><input type="text" id="page-title" placeholder="e.g. Privacy Policy"/></div>
+          <div class="form-group"><label>Content (EN)</label><div id="page-content-quill"></div><input type="hidden" id="page-content"/></div>
+        </div>
+        <div id="page-lang-hi" class="lang-panel">
+          <div class="form-group"><label>पृष्ठ शीर्षक (HI)</label><input type="text" id="page-title-hi" placeholder="जैसे: गोपनीयता नीति"/></div>
+          <div class="form-group"><label>सामग्री (HI)</label><div id="page-content-hi-quill"></div><input type="hidden" id="page-content-hi"/></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closePageModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitPage()">Save Page</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BLOG MODAL ===== -->
+  <div id="blogModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBlogModal()">
+    <div class="modal-box" style="max-width:780px;width:96%">
+      <div class="modal-header">
+        <h3 id="blog-modal-title">New Blog Post</h3>
+        <button class="modal-close-btn" onclick="closeBlogModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="blog-edit-id"/>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Slug</label>
+            <input type="text" id="blog-slug" placeholder="auto-generated-from-title"/>
+          </div>
+          <div class="form-group">
+            <label>Author</label>
+            <input type="text" id="blog-author" placeholder="HelperNear Team" value="HelperNear Team"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cover Image URL</label>
+            <input type="text" id="blog-cover" placeholder="https://..."/>
+          </div>
+          <div class="form-group toggle-row" style="align-items:flex-end">
+            <div><div class="toggle-label">Publish</div><div class="toggle-sub">Visible on website</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="blog-published"/><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="lang-tabs">
+          <button class="lang-tab-btn active" onclick="switchLangTab('blog','en',this)"><span class="lang-flag">🇬🇧</span> English</button>
+          <button class="lang-tab-btn" onclick="switchLangTab('blog','hi',this)"><span class="lang-flag">🇮🇳</span> Hindi</button>
+        </div>
+        <div id="blog-lang-en" class="lang-panel active">
+          <div class="form-group"><label>Title (EN)</label><input type="text" id="blog-title" placeholder="Post title" oninput="autoSlug()"/></div>
+          <div class="form-group"><label>Excerpt (EN)</label><input type="text" id="blog-excerpt" placeholder="Brief summary shown in blog listing..."/></div>
+          <div class="form-group"><label>Content (EN)</label><div id="blog-content-quill"></div><input type="hidden" id="blog-content"/></div>
+        </div>
+        <div id="blog-lang-hi" class="lang-panel">
+          <div class="form-group"><label>शीर्षक (HI)</label><input type="text" id="blog-title-hi" placeholder="पोस्ट शीर्षक"/></div>
+          <div class="form-group"><label>सारांश (HI)</label><input type="text" id="blog-excerpt-hi" placeholder="संक्षिप्त विवरण..."/></div>
+          <div class="form-group"><label>सामग्री (HI)</label><div id="blog-content-hi-quill"></div><input type="hidden" id="blog-content-hi"/></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeBlogModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitBlogPost()">Save Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONTACT VIEW MODAL ===== -->
+  <div id="contactViewModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeContactModal()">
+    <div class="modal-box" style="max-width:560px;width:94%">
+      <div class="modal-header">
+        <h3>Contact Message</h3>
+        <button class="modal-close-btn" onclick="closeContactModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="contact-view-body"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeContactModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Persistent map div — lives outside .section so it is NEVER
+
+  <!-- ===== ADD CATEGORY MODAL ===== -->
+  <div id="addCategoryModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>
+          <i data-lucide="tag"></i>
+          Add New Category
+        </h3>
+        <button class="modal-close-btn" onclick="closeAddCategoryModal()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="categoryName">Category Name</label>
+          <div class="input-wrapper">
+            <i data-lucide="type" class="input-icon"></i>
+            <input type="text" id="categoryName" placeholder="e.g. Plumbing" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="categoryIcon">Icon (Emoji)</label>
+          <div class="input-wrapper">
+            <i data-lucide="smile" class="input-icon"></i>
+            <input type="text" id="categoryIcon" placeholder="e.g. 🔧" maxlength="4" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeAddCategoryModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitAddCategory()">
+          <i data-lucide="plus"></i>
+          <span>Add Category</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BANNER MODAL ===== -->
+  <div id="bannerModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i data-lucide="image"></i> <span id="banner-modal-title">Add Banner</span></h3>
+        <button class="modal-close-btn" onclick="closeBannerModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="banner-id" />
+        <div class="form-group">
+          <label>Title <span style="color:var(--danger)">*</span></label>
+          <div class="input-wrapper">
+            <i data-lucide="type" class="input-icon"></i>
+            <input type="text" id="banner-title" placeholder="e.g. Summer Offers" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Subtitle</label>
+          <div class="input-wrapper">
+            <i data-lucide="align-left" class="input-icon"></i>
+            <input type="text" id="banner-subtitle" placeholder="Short description or call-to-action" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Image URL</label>
+          <div class="input-wrapper">
+            <i data-lucide="image" class="input-icon"></i>
+            <input type="text" id="banner-image" placeholder="https://..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Link URL</label>
+          <div class="input-wrapper">
+            <i data-lucide="link" class="input-icon"></i>
+            <input type="text" id="banner-link" placeholder="https://..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Sort Order</label>
+          <div class="input-wrapper">
+            <i data-lucide="arrow-up-down" class="input-icon"></i>
+            <input type="number" id="banner-order" min="0" value="0" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeBannerModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitBanner()">
+          <i data-lucide="save"></i>
+          <span id="banner-submit-label">Add Banner</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMPLAINT NOTE MODAL ===== -->
+  <div id="complaintModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i data-lucide="message-square"></i> Update Complaint</h3>
+        <button class="modal-close-btn" onclick="closeComplaintModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="complaint-id" />
+        <div class="complaint-detail-box" id="complaint-detail-box"></div>
+        <div class="form-group">
+          <label>Change Status</label>
+          <div class="input-wrapper">
+            <i data-lucide="activity" class="input-icon"></i>
+            <select id="complaint-status-select" style="background:var(--surface);color:var(--text);border:none;flex:1;padding:.6rem .5rem;font-size:.9rem;outline:none">
+              <option value="PENDING">Pending</option>
+              <option value="REVIEWED">Reviewed</option>
+              <option value="RESOLVED">Resolved</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Admin Note</label>
+          <textarea id="complaint-admin-note" rows="3" placeholder="Internal note about this complaint..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeComplaintModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitComplaintUpdate()">
+          <i data-lucide="save"></i>
+          Save Update
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TESTIMONIAL MODAL ===== -->
+  <div id="testimonialModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i data-lucide="quote"></i> <span id="testimonial-modal-title">Add Testimonial</span></h3>
+        <button class="modal-close-btn" onclick="closeTestimonialModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="testimonial-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name <span style="color:var(--danger)">*</span></label>
+            <div class="input-wrapper"><i data-lucide="user" class="input-icon"></i><input type="text" id="testimonial-name" placeholder="e.g. Rahul Sharma" /></div>
+          </div>
+          <div class="form-group">
+            <label>Photo URL</label>
+            <div class="input-wrapper"><i data-lucide="image" class="input-icon"></i><input type="text" id="testimonial-photo" placeholder="https://..." /></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Rating (1–5)</label>
+            <div class="input-wrapper"><i data-lucide="star" class="input-icon"></i><input type="number" id="testimonial-rating" min="1" max="5" value="5" /></div>
+          </div>
+          <div class="form-group">
+            <label>Sort Order</label>
+            <div class="input-wrapper"><i data-lucide="arrow-up-down" class="input-icon"></i><input type="number" id="testimonial-order" min="0" value="0" /></div>
+          </div>
+        </div>
+        <div class="lang-tabs">
+          <button class="lang-tab-btn active" onclick="switchLangTab('testimonial','en',this)"><span class="lang-flag">🇬🇧</span> English</button>
+          <button class="lang-tab-btn" onclick="switchLangTab('testimonial','hi',this)"><span class="lang-flag">🇮🇳</span> Hindi</button>
+        </div>
+        <div id="testimonial-lang-en" class="lang-panel active">
+          <div class="form-group"><label>Role / Title (EN)</label><div class="input-wrapper"><i data-lucide="briefcase" class="input-icon"></i><input type="text" id="testimonial-role" placeholder="e.g. Homeowner in Mumbai" /></div></div>
+          <div class="form-group"><label>Quote (EN) <span style="color:var(--danger)">*</span></label><textarea id="testimonial-quote" rows="3" placeholder="What they said about HelperNear..."></textarea></div>
+        </div>
+        <div id="testimonial-lang-hi" class="lang-panel">
+          <div class="form-group"><label>भूमिका / पद (HI)</label><div class="input-wrapper"><i data-lucide="briefcase" class="input-icon"></i><input type="text" id="testimonial-role-hi" placeholder="जैसे: मुंबई में घर का मालिक" /></div></div>
+          <div class="form-group"><label>समीक्षा (HI)</label><textarea id="testimonial-quote-hi" rows="3" placeholder="हिंदी में समीक्षा लिखें..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeTestimonialModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitTestimonial()">
+          <i data-lucide="save"></i>
+          <span id="testimonial-submit-label">Add Testimonial</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FAQ MODAL ===== -->
+  <div id="faqModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i data-lucide="help-circle"></i> <span id="faq-modal-title">Add FAQ</span></h3>
+        <button class="modal-close-btn" onclick="closeFaqModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="faq-id" />
+        <div class="form-group">
+          <label>Sort Order</label>
+          <div class="input-wrapper"><i data-lucide="arrow-up-down" class="input-icon"></i><input type="number" id="faq-order" min="0" value="0" /></div>
+        </div>
+        <div class="lang-tabs">
+          <button class="lang-tab-btn active" onclick="switchLangTab('faq','en',this)"><span class="lang-flag">🇬🇧</span> English</button>
+          <button class="lang-tab-btn" onclick="switchLangTab('faq','hi',this)"><span class="lang-flag">🇮🇳</span> Hindi</button>
+        </div>
+        <div id="faq-lang-en" class="lang-panel active">
+          <div class="form-group"><label>Question (EN) <span style="color:var(--danger)">*</span></label><div class="input-wrapper"><i data-lucide="help-circle" class="input-icon"></i><input type="text" id="faq-question" placeholder="e.g. How do I book a worker?" /></div></div>
+          <div class="form-group"><label>Answer (EN) <span style="color:var(--danger)">*</span></label><textarea id="faq-answer" rows="4" placeholder="The answer to the question..."></textarea></div>
+        </div>
+        <div id="faq-lang-hi" class="lang-panel">
+          <div class="form-group"><label>प्रश्न (HI)</label><div class="input-wrapper"><i data-lucide="help-circle" class="input-icon"></i><input type="text" id="faq-question-hi" placeholder="जैसे: कारीगर कैसे बुक करें?" /></div></div>
+          <div class="form-group"><label>उत्तर (HI)</label><textarea id="faq-answer-hi" rows="4" placeholder="हिंदी में उत्तर लिखें..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeFaqModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitFaq()">
+          <i data-lucide="save"></i>
+          <span id="faq-submit-label">Add FAQ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== WORKER EDIT MODAL ===== -->
+  <div id="workerEditModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box modal-box--wide">
+      <div class="modal-header">
+        <h3><i data-lucide="user-cog"></i> Edit Worker Profile</h3>
+        <button class="modal-close-btn" onclick="closeWorkerEditModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="we-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Bio / Description</label>
+            <textarea id="we-bio" rows="3" placeholder="Worker's bio..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Photo URL</label>
+            <div class="input-wrapper">
+              <i data-lucide="image" class="input-icon"></i>
+              <input type="text" id="we-photo" placeholder="https://..." />
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Experience (years)</label>
+            <div class="input-wrapper">
+              <i data-lucide="clock" class="input-icon"></i>
+              <input type="number" id="we-exp" min="0" max="60" placeholder="e.g. 5" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Price Range</label>
+            <div class="input-wrapper">
+              <i data-lucide="indian-rupee" class="input-icon"></i>
+              <input type="text" id="we-price" placeholder="e.g. ₹200–500/hr" />
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Work Status</label>
+            <div class="input-wrapper">
+              <i data-lucide="activity" class="input-icon"></i>
+              <select id="we-status" style="background:var(--surface);color:var(--text);border:none;flex:1;padding:.6rem .5rem;font-size:.9rem;outline:none">
+                <option value="AVAILABLE">Available</option>
+                <option value="BUSY">Busy</option>
+                <option value="OFFLINE">Offline</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Verified</label>
+            <div class="input-wrapper" style="padding:.6rem 1rem;align-items:center;gap:.75rem">
+              <input type="checkbox" id="we-verified" style="width:18px;height:18px;accent-color:var(--primary)" />
+              <span style="font-size:.9rem;color:var(--text-muted)">Mark as verified</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Categories</label>
+          <div id="we-categories" class="we-cat-grid"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeWorkerEditModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitWorkerEdit()">
+          <i data-lucide="save"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profile-overlay" class="confirm-overlay hidden">
+    <div class="confirm-modal profile-modal">
+      <button class="profile-modal-close" onclick="closeProfileModal()"><i data-lucide="x"></i></button>
+      <div class="profile-modal-avatar" id="pm-avatar">U</div>
+      <h3 id="pm-name">—</h3>
+      <p id="pm-phone" style="color:var(--text-muted);font-size:.85rem;margin:.2rem 0 1rem"></p>
+      <div class="profile-modal-badges" id="pm-badges"></div>
+      <div class="profile-modal-fields" id="pm-fields"></div>
+      <div class="profile-modal-footer" id="pm-footer"></div>
+    </div>
+  </div>
+
+  <!-- ===== ANNOUNCEMENT MODAL ===== -->
+  <div id="announcementModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="announcementModalTitle">New Announcement</h3>
+        <button class="modal-close" onclick="closeAnnouncementModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ann-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select id="ann-type">
+              <option value="INFO">Info</option>
+              <option value="WARNING">Warning</option>
+              <option value="SUCCESS">Success</option>
+              <option value="PROMO">Promo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Audience</label>
+            <select id="ann-audience">
+              <option value="ALL">All</option>
+              <option value="CUSTOMERS">Customers</option>
+              <option value="WORKERS">Workers</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group toggle-row">
+          <label>Active</label>
+          <label class="toggle-switch"><input type="checkbox" id="ann-active" checked /><span class="toggle-slider"></span></label>
+        </div>
+        <div class="lang-tabs">
+          <button class="lang-tab-btn active" onclick="switchLangTab('ann','en',this)"><span class="lang-flag">🇬🇧</span> English</button>
+          <button class="lang-tab-btn" onclick="switchLangTab('ann','hi',this)"><span class="lang-flag">🇮🇳</span> Hindi</button>
+        </div>
+        <div id="ann-lang-en" class="lang-panel active">
+          <div class="form-group"><label>Title (EN)</label><input type="text" id="ann-title" placeholder="Announcement title" /></div>
+          <div class="form-group"><label>Message (EN)</label><textarea id="ann-message" rows="3" placeholder="Announcement body..."></textarea></div>
+        </div>
+        <div id="ann-lang-hi" class="lang-panel">
+          <div class="form-group"><label>शीर्षक (HI)</label><input type="text" id="ann-title-hi" placeholder="घोषणा शीर्षक" /></div>
+          <div class="form-group"><label>संदेश (HI)</label><textarea id="ann-message-hi" rows="3" placeholder="हिंदी में घोषणा लिखें..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeAnnouncementModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitAnnouncement()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COUPON MODAL ===== -->
+  <div id="couponModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="couponModalTitle">Add Coupon</h3>
+        <button class="modal-close" onclick="closeCouponModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="coupon-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Code <span class="req">*</span></label>
+            <input type="text" id="coupon-code" placeholder="SAVE20" style="text-transform:uppercase" />
+          </div>
+          <div class="form-group">
+            <label>Discount Type</label>
+            <select id="coupon-type">
+              <option value="PERCENTAGE">Percentage (%)</option>
+              <option value="FLAT">Flat (₹)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Discount Value <span class="req">*</span></label>
+            <input type="number" id="coupon-value" placeholder="20" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Max Uses</label>
+            <input type="number" id="coupon-maxuses" placeholder="Unlimited" min="1" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="coupon-desc" placeholder="Optional description" />
+        </div>
+        <div class="form-group">
+          <label>Expires At</label>
+          <input type="datetime-local" id="coupon-expires" />
+        </div>
+        <div class="form-group toggle-row">
+          <label>Active</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="coupon-active" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeCouponModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitCoupon()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NOTIFICATION TEMPLATE MODAL ===== -->
+  <div id="templateModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box modal-box--wide">
+      <div class="modal-header">
+        <h3 id="templateModalTitle">Add Template</h3>
+        <button class="modal-close" onclick="closeTemplateModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="tpl-id" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Template Name <span class="req">*</span></label>
+            <input type="text" id="tpl-name" placeholder="otp_verification" />
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="tpl-type">
+              <option value="SMS">SMS</option>
+              <option value="EMAIL">Email</option>
+              <option value="PUSH">Push</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Variables <small style="color:var(--muted)">(comma separated)</small></label>
+            <input type="text" id="tpl-vars" placeholder="name,otp" />
+          </div>
+          <div class="form-group toggle-row" style="align-items:flex-end">
+            <div><div class="toggle-label">Active</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="tpl-active" checked /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="lang-tabs">
+          <button class="lang-tab-btn active" onclick="switchLangTab('tpl','en',this)"><span class="lang-flag">🇬🇧</span> English</button>
+          <button class="lang-tab-btn" onclick="switchLangTab('tpl','hi',this)"><span class="lang-flag">🇮🇳</span> Hindi</button>
+        </div>
+        <div id="tpl-lang-en" class="lang-panel active">
+          <div class="form-group" id="tpl-subject-wrap"><label>Subject (Email only)</label><input type="text" id="tpl-subject" placeholder="Email subject line" /></div>
+          <div class="form-group"><label>Body (EN) <span class="req">*</span></label><textarea id="tpl-body" rows="5" placeholder="Hello {{name}}, your OTP is {{otp}}"></textarea></div>
+        </div>
+        <div id="tpl-lang-hi" class="lang-panel">
+          <div class="form-group"><label>विषय (HI — Email only)</label><input type="text" id="tpl-subject-hi" placeholder="ईमेल विषय पंक्ति" /></div>
+          <div class="form-group"><label>संदेश (HI)</label><textarea id="tpl-body-hi" rows="5" placeholder="नमस्ते {{name}}, आपका OTP है {{otp}}"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeTemplateModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitTemplate()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN PROFILE MODAL ===== -->
+  <div id="adminProfileModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Admin Profile</h3>
+        <button class="modal-close" onclick="closeAdminProfileModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-avatar-row">
+          <div class="profile-avatar-circle" id="profile-avatar-initials">A</div>
+          <div>
+            <div id="profile-display-name" style="font-weight:600;font-size:1.1rem;color:var(--text)"></div>
+            <div id="profile-display-email" style="font-size:.85rem;color:var(--muted)"></div>
+          </div>
+        </div>
+        <hr style="border-color:var(--border);margin:1.2rem 0" />
+        <div class="form-group">
+          <label>Display Name</label>
+          <input type="text" id="profile-name-input" placeholder="Your name" />
+        </div>
+        <button class="btn-primary" style="width:100%;margin-bottom:1.2rem" onclick="saveAdminProfile()">Update Name</button>
+        <hr style="border-color:var(--border);margin:1.2rem 0" />
+        <h4 style="color:var(--text);margin-bottom:.8rem">Change Password</h4>
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" id="profile-current-pass" placeholder="Current password" />
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="profile-new-pass" placeholder="New password" />
+        </div>
+        <div class="form-group">
+          <label>Confirm New Password</label>
+          <input type="password" id="profile-confirm-pass" placeholder="Confirm new password" />
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="saveAdminPassword()">Change Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== WORKER RATING ANALYTICS MODAL ===== -->
+  <div id="ratingAnalyticsModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box modal-box--wide">
+      <div class="modal-header">
+        <h3 id="ratingAnalyticsTitle">Worker Rating Analytics</h3>
+        <button class="modal-close" onclick="closeRatingModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="rating-analytics-content">
+          <div class="table-empty" style="padding:2rem;text-align:center;">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirm-overlay" class="confirm-overlay hidden">
+    <div class="confirm-modal">
+      <div class="confirm-icon" id="confirm-icon"><i data-lucide="trash-2"></i></div>
+      <h3 id="confirm-title">Are you sure?</h3>
+      <p id="confirm-message">This action cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="btn-confirm-cancel" id="confirm-cancel">Cancel</button>
+        <button class="btn-confirm-ok" id="confirm-ok">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

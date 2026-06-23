@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog – HelperNear</title>
+  <meta name="description" content="Tips, guides and updates from the HelperNear team. Learn how to find skilled workers, home maintenance tips, and more." />
+  <link rel="canonical" href="https://helpernear.com/blog.html" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://helpernear.com/blog.html" />
+  <meta property="og:title"       content="Blog – HelperNear" />
+  <meta property="og:description" content="Tips, guides and updates from the HelperNear team." />
+  <meta property="og:image"       content="https://helpernear.com/assets/og-image.png" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Blog – HelperNear" />
+  <meta name="twitter:description" content="Tips, guides and updates from the HelperNear team." />
+  <meta name="twitter:image"       content="https://helpernear.com/assets/og-image.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .blog-hero { padding: 5rem 1.5rem 3rem; text-align: center; }
+    .blog-hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: .75rem; }
+    .blog-hero p { color: var(--text-muted); font-size: 1.1rem; }
+    .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+    .blog-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: transform .2s, box-shadow .2s; cursor: pointer; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+    .blog-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,.15); }
+    .blog-card-img { width: 100%; height: 180px; object-fit: cover; background: var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: .85rem; }
+    .blog-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .blog-card-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: .5rem; }
+    .blog-card-meta { font-size: .75rem; color: var(--text-muted); }
+    .blog-card-title { font-size: 1.05rem; font-weight: 700; line-height: 1.4; }
+    .blog-card-excerpt { font-size: .875rem; color: var(--text-muted); line-height: 1.6; flex: 1; }
+    .blog-card-author { font-size: .78rem; font-weight: 600; color: var(--primary); margin-top: auto; }
+    .blog-post-wrap { max-width: 780px; margin: 0 auto; padding: 5rem 1.5rem 5rem; }
+    .blog-post-cover { width: 100%; max-height: 380px; object-fit: cover; border-radius: 14px; margin-bottom: 2rem; }
+    .blog-post-meta { font-size: .82rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .blog-post-title { font-size: 2rem; font-weight: 800; line-height: 1.3; margin-bottom: 1.5rem; }
+    .blog-post-body { line-height: 1.85; color: var(--text-muted); }
+    .blog-post-body p { margin-bottom: 1rem; }
+    .back-link { display: inline-block; margin-bottom: 2rem; font-size: .9rem; color: var(--primary); text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .blog-empty { text-align: center; padding: 5rem 1.5rem; color: var(--text-muted); grid-column: 1/-1; }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav">
+    <div class="nav-inner">
+      <a href="/" class="logo" style="text-decoration:none">Helper<span>Near</span></a>
+    </div>
+  </nav>
+
+  <div id="view-list">
+    <div class="blog-hero">
+      <h1>Blog</h1>
+      <p>Tips, stories, and updates from the HelperNear team.</p>
+    </div>
+    <div class="blog-grid" id="blog-grid">
+      <div class="blog-empty">Loading posts…</div>
+    </div>
+    <div style="text-align:center;padding:2rem 0 3rem">
+      <button id="load-more-btn" onclick="loadList(false)" style="display:none;padding:.75rem 2.5rem;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Load More</button>
+    </div>
+  </div>
+
+  <div id="view-post" style="display:none">
+    <div class="blog-post-wrap">
+      <a href="/blog.html" class="back-link" onclick="showList();return false;">← Back to Blog</a>
+      <div id="post-output"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 HelperNear. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API = 'http://localhost:3000/api/v1';
+    const slugParam = new URLSearchParams(location.search).get('slug');
+
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function renderBody(text) {
+      const s = String(text || '');
+      // If content looks like HTML (from rich text editor), render directly
+      if (/<[a-z][\s\S]*>/i.test(s)) return s;
+      return '<p>' + s.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+    }
+    function fmtDate(d) {
+      if (!d) return '';
+      return new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+    }
+
+    function showList() {
+      document.getElementById('view-list').style.display = '';
+      document.getElementById('view-post').style.display = 'none';
+      history.pushState(null, '', '/blog.html');
+    }
+    function showPost() {
+      document.getElementById('view-list').style.display = 'none';
+      document.getElementById('view-post').style.display = '';
+    }
+
+    const PAGE_SIZE = 9;
+    let _blogPage = 1;
+    let _blogHasMore = true;
+    let _blogLoading = false;
+
+    async function loadList(reset = true) {
+      if (_blogLoading) return;
+      _blogLoading = true;
+      const grid = document.getElementById('blog-grid');
+      const btn  = document.getElementById('load-more-btn');
+      if (reset) { _blogPage = 1; _blogHasMore = true; grid.innerHTML = '<div class="blog-empty" style="grid-column:1/-1">Loading…</div>'; }
+      try {
+        const res = await fetch(`${API}/public/blog?page=${_blogPage}&limit=${PAGE_SIZE}`);
+        if (!res.ok) throw new Error();
+        const json = await res.json();
+        const posts = json.data?.posts || json.data || [];
+        const total = json.data?.total ?? posts.length;
+        if (reset) grid.innerHTML = '';
+        if (!posts.length && reset) { grid.innerHTML = '<div class="blog-empty">No posts published yet. Check back soon!</div>'; _blogHasMore = false; }
+        posts.forEach(p => {
+          const a = document.createElement('a');
+          a.className = 'blog-card';
+          a.href = `/blog.html?slug=${encodeURIComponent(p.slug)}`;
+          a.onclick = e => { e.preventDefault(); loadPost(p.slug); };
+          a.innerHTML = `
+            <div class="blog-card-img">${p.coverImage ? `<img src="${esc(p.coverImage)}" alt="${esc(p.title)}" loading="lazy"/>` : '<span style="padding:1rem;color:var(--text-muted)">No image</span>'}</div>
+            <div class="blog-card-body">
+              <div class="blog-card-meta">${fmtDate(p.publishedAt || p.createdAt)}</div>
+              <div class="blog-card-title">${esc(p.title)}</div>
+              ${p.excerpt ? `<div class="blog-card-excerpt">${esc(p.excerpt)}</div>` : ''}
+              <div class="blog-card-author">By ${esc(p.author || 'HelperNear Team')}</div>
+            </div>`;
+          grid.appendChild(a);
+        });
+        _blogHasMore = (_blogPage * PAGE_SIZE) < total;
+        _blogPage++;
+        if (btn) btn.style.display = _blogHasMore ? 'block' : 'none';
+      } catch {
+        if (reset) grid.innerHTML = '<div class="blog-empty">Could not load posts. Please try again later.</div>';
+      } finally { _blogLoading = false; }
+    }
+
+    async function loadPost(slug) {
+      showPost();
+      const out = document.getElementById('post-output');
+      out.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted)">Loading…</div>';
+      history.pushState(null, '', '/blog.html?slug=' + encodeURIComponent(slug));
+      try {
+        const res = await fetch(API + '/public/blog/' + encodeURIComponent(slug));
+        if (!res.ok) throw new Error();
+        const { data: p } = await res.json();
+        document.title = p.title + ' – HelperNear Blog';
+        // Update OG / Twitter meta dynamically
+        const setM = (sel, val) => document.querySelector(sel)?.setAttribute('content', val);
+        const desc = p.excerpt || p.title;
+        setM('meta[property="og:title"]',       p.title + ' – HelperNear Blog');
+        setM('meta[property="og:description"]', desc);
+        setM('meta[name="twitter:title"]',       p.title + ' – HelperNear Blog');
+        setM('meta[name="twitter:description"]', desc);
+        if (p.coverImage) { setM('meta[property="og:image"]', p.coverImage); }
+        document.querySelector('link[rel="canonical"]')?.setAttribute('href', location.href);
+        // JSON-LD for article
+        const ld = { '@context': 'https://schema.org', '@type': 'Article', headline: p.title,
+          datePublished: p.publishedAt || p.createdAt, dateModified: p.updatedAt || p.createdAt,
+          author: { '@type': 'Person', name: p.author || 'HelperNear Team' },
+          image: p.coverImage || undefined, description: desc };
+        let ldEl = document.getElementById('jsonld-article');
+        if (!ldEl) { ldEl = document.createElement('script'); ldEl.type = 'application/ld+json'; ldEl.id = 'jsonld-article'; document.head.appendChild(ldEl); }
+        ldEl.textContent = JSON.stringify(ld);
+        out.innerHTML = `
+          ${p.coverImage ? `<img src="${esc(p.coverImage)}" class="blog-post-cover" alt="${esc(p.title)}"/>` : ''}
+          <div class="blog-post-meta">${fmtDate(p.publishedAt || p.createdAt)} · By ${esc(p.author || 'HelperNear Team')}</div>
+          <h1 class="blog-post-title">${esc(p.title)}</h1>
+          <div class="blog-post-body">${renderBody(p.content)}</div>`;
+      } catch {
+        out.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted)">Post not found.</div>';
+      }
+    }
+
+    if (slugParam) { loadList(); loadPost(slugParam); }
+    else { loadList(); }
+  </script>
+</body>
+</html>

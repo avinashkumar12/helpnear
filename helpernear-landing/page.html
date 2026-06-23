@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelperNear</title>
+  <meta name="description"        id="meta-desc"  content="HelperNear – Find verified local workers near you." />
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         id="og-url"    content="https://helpernear.com/page.html" />
+  <meta property="og:title"       id="og-title"  content="HelperNear" />
+  <meta property="og:description" id="og-desc"   content="HelperNear – Find verified local workers near you." />
+  <meta property="og:image"       content="https://helpernear.com/assets/og-image.png" />
+  <meta name="twitter:card"       content="summary" />
+  <link rel="canonical"           id="canonical" href="https://helpernear.com/page.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .page-content-wrap { max-width: 780px; margin: 0 auto; padding: 5rem 1.5rem 4rem; }
+    .page-content-wrap h1 { font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
+    .page-body { line-height: 1.85; color: var(--text-muted); }
+    .page-body h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); margin: 2rem 0 .75rem; }
+    .page-body p { margin-bottom: 1rem; }
+    .page-body ul, .page-body ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+    .page-body li { margin-bottom: .4rem; }
+    .page-not-found { text-align: center; padding: 6rem 1.5rem; }
+    .page-not-found h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+    .back-link { display: inline-block; margin-bottom: 2rem; font-size: .9rem; color: var(--primary); text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav">
+    <div class="nav-inner">
+      <a href="/" class="logo" style="text-decoration:none">Helper<span>Near</span></a>
+    </div>
+  </nav>
+
+  <div class="page-content-wrap">
+    <a href="/" class="back-link">← Back to Home</a>
+    <div id="page-output">
+      <div style="text-align:center;padding:4rem 0;color:var(--text-muted)">Loading…</div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 HelperNear. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API = 'http://localhost:3000/api/v1';
+    const slug = new URLSearchParams(location.search).get('slug');
+    async function loadPage() {
+      const out = document.getElementById('page-output');
+      if (!slug) { out.innerHTML = '<div class="page-not-found"><h2>Page Not Found</h2><a href="/">Go Home</a></div>'; return; }
+      try {
+        const res = await fetch(API + '/public/pages/' + encodeURIComponent(slug));
+        if (!res.ok) throw new Error();
+        const { data } = await res.json();
+        document.title = data.title + ' – HelperNear';
+        const pageUrl = location.href;
+        const setMeta = (id, val) => { const el = document.getElementById(id); if (el) el.setAttribute(el.tagName === 'LINK' ? 'href' : 'content', val); };
+        setMeta('og-url', pageUrl); setMeta('og-title', data.title + ' – HelperNear');
+        setMeta('og-desc', data.title); setMeta('canonical', pageUrl);
+        document.getElementById('meta-desc')?.setAttribute('content', data.title + ' – HelperNear');
+        out.innerHTML = `<h1>${esc(data.title)}</h1><div class="page-body">${renderContent(data.content)}</div>`;
+      } catch {
+        out.innerHTML = '<div class="page-not-found"><h2>Page Not Found</h2><p>This page does not exist or has been removed.</p><a href="/">Go Home</a></div>';
+      }
+    }
+    function renderContent(text) {
+      const s = String(text || '');
+      if (/<[a-z][\s\S]*>/i.test(s)) return s;
+      return '<p>' + s.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+    }
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    loadPage();
+  </script>
+</body>
+</html>

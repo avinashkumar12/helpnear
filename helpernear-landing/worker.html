@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Worker Profile – HelperNear</title>
+  <meta name="description" content="View verified worker profile on HelperNear. Contact directly via call or WhatsApp." />
+  <meta property="og:type"        content="profile" />
+  <meta property="og:url"         id="og-url"   content="https://helpernear.com/worker.html" />
+  <meta property="og:title"       id="og-title" content="Worker Profile – HelperNear" />
+  <meta property="og:description" id="og-desc"  content="View verified worker profile on HelperNear." />
+  <meta property="og:image"       id="og-image" content="https://helpernear.com/assets/og-image.png" />
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       id="tw-title" content="Worker Profile – HelperNear" />
+  <meta name="twitter:description" id="tw-desc"  content="View verified worker profile on HelperNear." />
+  <link rel="canonical"            id="canonical" href="https://helpernear.com/worker.html" />
+  <script type="application/ld+json" id="jsonld-person"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .wp-wrap { max-width: 860px; margin: 0 auto; padding: 5rem 1.5rem 4rem; }
+    .wp-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+    .wp-hero { background: linear-gradient(135deg, var(--primary) 0%, #ff8c5a 100%); padding: 2.5rem 2rem 5rem; position: relative; }
+    .wp-avatar-wrap { display: flex; align-items: flex-end; gap: 1.5rem; }
+    .wp-avatar { width: 96px; height: 96px; border-radius: 50%; border: 4px solid rgba(255,255,255,.4); object-fit: cover; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .wp-hero-text h1 { font-size: 1.75rem; font-weight: 800; color: #fff; margin: 0 0 .3rem; }
+    .wp-hero-text p { font-size: .9rem; color: rgba(255,255,255,.8); margin: 0; }
+    .wp-verified { display: inline-flex; align-items: center; gap: .3rem; background: rgba(255,255,255,.2); color: #fff; font-size: .75rem; font-weight: 600; padding: .2rem .65rem; border-radius: 999px; margin-top: .5rem; }
+    .wp-body { padding: 2rem; margin-top: -2.5rem; }
+    .wp-stats { display: flex; flex-wrap: wrap; gap: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.75rem; }
+    .wp-stat { flex: 1; min-width: 80px; text-align: center; }
+    .wp-stat-val { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+    .wp-stat-lbl { font-size: .75rem; color: var(--text-muted); margin-top: .1rem; }
+    .wp-section { margin-bottom: 2rem; }
+    .wp-section h3 { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: .85rem; }
+    .wp-bio { line-height: 1.75; color: var(--text-muted); }
+    .wp-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .wp-chip { background: rgba(255,107,53,.1); color: var(--primary); border: 1px solid rgba(255,107,53,.25); font-size: .8rem; font-weight: 600; padding: .3rem .85rem; border-radius: 999px; }
+    .wp-info-row { display: flex; align-items: center; gap: .65rem; font-size: .9rem; color: var(--text-muted); margin-bottom: .6rem; }
+    .wp-info-row strong { color: var(--text); }
+    .wp-contact-btns { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: .5rem; }
+    .wp-btn-call { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.75rem; border-radius: 10px; font-size: .95rem; font-weight: 700; text-decoration: none; transition: transform .15s; }
+    .wp-btn-call:hover { transform: translateY(-2px); }
+    .wp-btn-call { background: var(--primary); color: #fff; }
+    .wp-btn-wa   { background: #25d366; color: #fff; }
+    .wp-review { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+    .wp-review:last-child { border-bottom: none; }
+    .wp-review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .4rem; }
+    .wp-review-author { font-weight: 600; font-size: .9rem; }
+    .wp-review-stars { color: #f59e0b; font-size: .9rem; }
+    .wp-review-date { font-size: .75rem; color: var(--text-muted); }
+    .wp-review-comment { font-size: .875rem; color: var(--text-muted); line-height: 1.6; }
+    .wp-status-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .78rem; font-weight: 600; padding: .2rem .7rem; border-radius: 999px; }
+    .wp-status-available { background: rgba(34,197,94,.15); color: #22c55e; }
+    .wp-status-busy      { background: rgba(245,158,11,.15); color: #f59e0b; }
+    .wp-status-offline   { background: rgba(100,116,139,.15); color: #64748b; }
+    .back-link { display: inline-flex; align-items: center; gap: .4rem; margin-bottom: 1.5rem; font-size: .9rem; color: var(--primary); text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .wp-not-found { text-align: center; padding: 5rem 1.5rem; }
+    .wp-not-found h2 { font-size: 1.5rem; margin-bottom: .5rem; }
+    .wp-not-found p { color: var(--text-muted); }
+  </style>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <nav class="nav" id="main-nav">
+    <div class="nav-inner">
+      <a href="/" class="logo" style="text-decoration:none">
+        <img src="/assets/logo-light.svg" alt="HelperNear" style="height:32px;width:auto;" id="nav-logo"/>
+      </a>
+    </div>
+  </nav>
+
+  <div class="wp-wrap">
+    <a href="javascript:history.back()" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Back</a>
+    <div id="wp-content">
+      <div style="text-align:center;padding:4rem;color:var(--text-muted)">Loading…</div>
+    </div>
+  </div>
+
+  <footer class="footer" style="margin-top:2rem">
+    <div class="container">
+      <div class="footer-bottom"><p>© 2026 HelperNear. All rights reserved.</p></div>
+    </div>
+  </footer>
+
+  <script>
+    const API = '/api/v1';
+    const workerId = new URLSearchParams(location.search).get('id');
+
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function stars(n) {
+      const r = Math.min(5, Math.max(0, Math.round(n || 0)));
+      return '★'.repeat(r) + '☆'.repeat(5 - r);
+    }
+    function fmtDate(d) {
+      if (!d) return '';
+      return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    function avatarInitials(name) {
+      return (name || 'W').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+    function avatarColor(name) {
+      const colors = ['#FF6B35','#6366f1','#22c55e','#f59e0b','#ec4899','#14b8a6'];
+      let h = 0;
+      for (let i = 0; i < (name||'').length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffff;
+      return colors[Math.abs(h) % colors.length];
+    }
+
+    async function load() {
+      if (!workerId) { showNotFound(); return; }
+      try {
+        const res = await fetch(`${API}/public/workers/${encodeURIComponent(workerId)}`);
+        if (!res.ok) { showNotFound(); return; }
+        const { data: w } = await res.json();
+        render(w);
+      } catch { showNotFound(); }
+    }
+
+    function showNotFound() {
+      document.getElementById('wp-content').innerHTML = `
+        <div class="wp-not-found">
+          <h2>Worker not found</h2>
+          <p>This profile doesn't exist or is not publicly available.</p>
+          <a href="/" style="color:var(--primary);text-decoration:none;font-weight:600;display:inline-block;margin-top:1rem">← Back to Home</a>
+        </div>`;
+    }
+
+    function render(w) {
+      const name = w.user?.name || 'Worker';
+      const cats = (w.categories || []).map(c => c.category?.name || '').filter(Boolean);
+      const avgRating = w.reviews?.length ? (w.reviews.reduce((a, r) => a + r.rating, 0) / w.reviews.length).toFixed(1) : '—';
+      const statusCls = { AVAILABLE: 'wp-status-available', BUSY: 'wp-status-busy', OFFLINE: 'wp-status-offline' }[w.status] || 'wp-status-offline';
+      const color = avatarColor(name);
+
+      document.title = name + ' – HelperNear';
+      const pageUrl = location.href;
+      const desc = (w.bio ? w.bio.slice(0, 140) : `${cats.slice(0,2).join(', ')} worker on HelperNear.`) + ' Contact directly via call or WhatsApp.';
+      const img = w.photoUrl || 'https://helpernear.com/assets/og-image.png';
+      const setMeta = (id, val) => { const el = document.getElementById(id); if (el) el.setAttribute(el.tagName === 'LINK' ? 'href' : 'content', val); };
+      setMeta('og-url',   pageUrl);
+      setMeta('og-title', name + ' – HelperNear');
+      setMeta('og-desc',  desc);
+      setMeta('og-image', img);
+      setMeta('tw-title', name + ' – HelperNear');
+      setMeta('tw-desc',  desc);
+      setMeta('canonical', pageUrl);
+      document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+      const jsonld = document.getElementById('jsonld-person');
+      if (jsonld) jsonld.textContent = JSON.stringify({
+        '@context': 'https://schema.org', '@type': 'Person',
+        name, description: w.bio || '',
+        jobTitle: cats.slice(0,2).join(', ') || 'Worker',
+        url: pageUrl,
+        image: w.photoUrl || undefined,
+        aggregateRating: w.reviews?.length ? { '@type': 'AggregateRating', ratingValue: avgRating, reviewCount: w.reviews.length } : undefined,
+      });
+
+      const avatarHtml = w.photoUrl
+        ? `<img src="${esc(w.photoUrl)}" class="wp-avatar" alt="${esc(name)}"/>`
+        : `<div class="wp-avatar" style="background:linear-gradient(135deg,${color},${color}aa)">${esc(avatarInitials(name))}</div>`;
+
+      const reviewsHtml = (w.reviews || []).length
+        ? w.reviews.map(r => `
+          <div class="wp-review">
+            <div class="wp-review-header">
+              <span class="wp-review-author">${esc(r.user?.name || 'Anonymous')}</span>
+              <span class="wp-review-stars">${stars(r.rating)}</span>
+            </div>
+            <div class="wp-review-date">${fmtDate(r.createdAt)}</div>
+            ${r.comment ? `<div class="wp-review-comment">${esc(r.comment)}</div>` : ''}
+          </div>`).join('')
+        : '<div style="color:var(--text-muted);font-size:.875rem;padding:.5rem 0">No reviews yet.</div>';
+
+      document.getElementById('wp-content').innerHTML = `
+        <div class="wp-card">
+          <div class="wp-hero">
+            <div class="wp-avatar-wrap">
+              ${avatarHtml}
+              <div class="wp-hero-text">
+                <h1>${esc(name)}</h1>
+                <p>${cats.slice(0, 3).map(esc).join(' · ') || 'General Services'}</p>
+                <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.4rem">
+                  <span class="wp-verified"><i data-lucide="shield-check" style="width:12px;height:12px"></i> Verified</span>
+                  <span class="wp-status-badge ${statusCls}" style="background:rgba(255,255,255,.2);color:#fff">${w.status || 'OFFLINE'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="wp-body">
+            <div class="wp-stats">
+              <div class="wp-stat">
+                <div class="wp-stat-val">${avgRating !== '—' ? avgRating + ' ★' : '—'}</div>
+                <div class="wp-stat-lbl">Rating</div>
+              </div>
+              <div class="wp-stat">
+                <div class="wp-stat-val">${w.reviews?.length || 0}</div>
+                <div class="wp-stat-lbl">Reviews</div>
+              </div>
+              <div class="wp-stat">
+                <div class="wp-stat-val">${w.experienceYears || 0}+</div>
+                <div class="wp-stat-lbl">Yrs Exp.</div>
+              </div>
+              ${w.priceRange ? `<div class="wp-stat"><div class="wp-stat-val" style="font-size:1.1rem">${esc(w.priceRange)}</div><div class="wp-stat-lbl">Price</div></div>` : ''}
+            </div>
+
+            ${w.bio ? `<div class="wp-section"><h3>About</h3><div class="wp-bio">${esc(w.bio)}</div></div>` : ''}
+
+            ${cats.length ? `<div class="wp-section"><h3>Services</h3><div class="wp-chips">${cats.map(c => `<span class="wp-chip">${esc(c)}</span>`).join('')}</div></div>` : ''}
+
+            <div class="wp-section">
+              <h3>Contact</h3>
+              <div class="wp-contact-btns">
+                <a href="tel:${esc(w.user?.phone || '')}" class="wp-btn-call"><i data-lucide="phone" style="width:16px;height:16px"></i> Call Now</a>
+                <a href="https://wa.me/${(w.user?.phone || '').replace(/\D/g,'')}" class="wp-btn-call wp-btn-wa" target="_blank" rel="noopener"><i data-lucide="message-circle" style="width:16px;height:16px"></i> WhatsApp</a>
+              </div>
+            </div>
+
+            <div class="wp-section">
+              <h3>Reviews (${w.reviews?.length || 0})</h3>
+              ${reviewsHtml}
+            </div>
+          </div>
+        </div>`;
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    // Branding
+    (async function() {
+      try {
+        const res = await fetch(`${API}/public/branding`);
+        if (!res.ok) return;
+        const { data } = await res.json();
+        if (data.logoLightUrl) document.getElementById('nav-logo').src = data.logoLightUrl;
+      } catch (_) {}
+    })();
+
+    load();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  </script>
+</body>
+</html>

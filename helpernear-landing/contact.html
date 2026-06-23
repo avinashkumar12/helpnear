@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us – HelperNear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .contact-wrap { max-width: 980px; margin: 0 auto; padding: 5rem 1.5rem 5rem; display: grid; grid-template-columns: 1fr 1.4fr; gap: 3rem; align-items: start; }
+    @media (max-width: 700px) { .contact-wrap { grid-template-columns: 1fr; } }
+    .contact-info h1 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+    .contact-info p { color: var(--text-muted); line-height: 1.7; margin-bottom: 2rem; }
+    .contact-detail { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: 1.25rem; }
+    .contact-detail-icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(var(--primary-rgb,99,102,241),.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .contact-detail-icon svg { width: 18px; height: 18px; stroke: var(--primary); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .contact-detail-text strong { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .1rem; }
+    .contact-detail-text span { color: var(--text-muted); font-size: .9rem; }
+    .contact-form-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; }
+    .contact-form-card h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1rem; }
+    .form-group label { font-size: .8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+    .form-group input, .form-group textarea, .form-group select { background: var(--input-bg, var(--main-bg)); border: 1px solid var(--border); border-radius: 8px; padding: .65rem .9rem; color: var(--text); font-size: .95rem; font-family: inherit; outline: none; transition: border-color .2s; width: 100%; box-sizing: border-box; }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+    .form-group textarea { min-height: 120px; resize: vertical; }
+    .form-submit-row { margin-top: .5rem; }
+    .btn-contact { width: 100%; padding: .85rem; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+    .btn-contact:hover { opacity: .88; }
+    .btn-contact:disabled { opacity: .5; cursor: not-allowed; }
+    .contact-success { display: none; text-align: center; padding: 2rem; }
+    .contact-success-icon { width: 56px; height: 56px; background: rgba(34,197,94,.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+    .contact-success-icon svg { width: 28px; height: 28px; stroke: #22c55e; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .contact-success h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: .5rem; }
+    .contact-success p { color: var(--text-muted); font-size: .95rem; }
+    .error-msg { color: #f87171; font-size: .82rem; margin-top: .25rem; }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="main-nav">
+    <div class="nav-inner">
+      <a href="/" class="logo" style="text-decoration:none">Helper<span>Near</span></a>
+      <a href="/" style="font-size:.9rem;color:var(--text-muted);text-decoration:none">← Back to Home</a>
+    </div>
+  </nav>
+
+  <div class="contact-wrap">
+    <!-- Left: info -->
+    <div class="contact-info">
+      <h1>Get in Touch</h1>
+      <p>Have a question, feedback, or need help? We'd love to hear from you. Fill out the form and we'll get back to you within 24 hours.</p>
+
+      <div class="contact-detail">
+        <div class="contact-detail-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="contact-detail-text">
+          <strong>Email</strong>
+          <span>support@helpernear.com</span>
+        </div>
+      </div>
+
+      <div class="contact-detail">
+        <div class="contact-detail-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.94-.94a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div class="contact-detail-text">
+          <strong>Phone</strong>
+          <span>+91 98765 43210</span>
+        </div>
+      </div>
+
+      <div class="contact-detail">
+        <div class="contact-detail-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="contact-detail-text">
+          <strong>Response Time</strong>
+          <span>Within 24 hours</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: form -->
+    <div class="contact-form-card">
+      <h2>Send a Message</h2>
+      <div id="contact-form-inner">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="cf-name" placeholder="Your name" />
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="cf-email" placeholder="you@example.com" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" id="cf-phone" placeholder="+91 00000 00000" />
+          </div>
+          <div class="form-group">
+            <label>Subject *</label>
+            <select id="cf-subject">
+              <option value="">Select a subject</option>
+              <option>General Enquiry</option>
+              <option>Worker Registration Help</option>
+              <option>Booking Issue</option>
+              <option>Payment Problem</option>
+              <option>Report a Worker</option>
+              <option>Report a User</option>
+              <option>Partnership Enquiry</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Message *</label>
+          <textarea id="cf-message" placeholder="Describe your issue or question in detail…"></textarea>
+        </div>
+        <div id="cf-error" class="error-msg" style="display:none"></div>
+        <div class="form-submit-row">
+          <button class="btn-contact" id="cf-submit" onclick="submitContactForm()">Send Message</button>
+        </div>
+      </div>
+
+      <div class="contact-success" id="contact-success">
+        <div class="contact-success-icon">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Message Sent!</h3>
+        <p>Thank you for reaching out. We'll get back to you within 24 hours.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 HelperNear. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API = 'http://localhost:3000/api/v1';
+
+    async function submitContactForm() {
+      const name    = document.getElementById('cf-name').value.trim();
+      const email   = document.getElementById('cf-email').value.trim();
+      const phone   = document.getElementById('cf-phone').value.trim();
+      const subject = document.getElementById('cf-subject').value;
+      const message = document.getElementById('cf-message').value.trim();
+      const errEl   = document.getElementById('cf-error');
+      const btn     = document.getElementById('cf-submit');
+
+      errEl.style.display = 'none';
+      if (!name || !email || !subject || !message) {
+        errEl.textContent = 'Please fill in all required fields.';
+        errEl.style.display = '';
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errEl.textContent = 'Please enter a valid email address.';
+        errEl.style.display = '';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      try {
+        const res = await fetch(API + '/public/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone: phone || undefined, subject, message }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.message || 'Failed to send. Please try again.');
+        }
+        document.getElementById('contact-form-inner').style.display = 'none';
+        document.getElementById('contact-success').style.display = '';
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.style.display = '';
+        btn.disabled = false;
+        btn.textContent = 'Send Message';
+      }
+    }
+  </script>
+</body>
+</html>

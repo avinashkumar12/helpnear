@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>HelperNear API Reference</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--primary:#6C63FF;--dark:#0F0E17;--dark2:#1A1927;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--gray:#6B7280;--light:#F8F7FF;--border:#e5e7eb}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#f9fafb;color:var(--dark);display:flex;min-height:100vh}
+    /* SIDEBAR */
+    .sidebar{width:260px;background:var(--dark);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;padding:1.5rem 0;flex-shrink:0}
+    .sidebar-logo{padding:0 1.5rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:1rem}
+    .sidebar-logo h1{color:white;font-size:1.1rem;font-weight:800}.sidebar-logo h1 span{color:var(--primary)}
+    .sidebar-logo p{color:rgba(255,255,255,0.4);font-size:.75rem;margin-top:.25rem}
+    .sidebar-section{padding:.5rem 1.5rem;color:rgba(255,255,255,0.35);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:1rem}
+    .sidebar a{display:flex;align-items:center;gap:.6rem;padding:.5rem 1.5rem;color:rgba(255,255,255,0.6);text-decoration:none;font-size:.85rem;transition:all .15s}
+    .sidebar a:hover,.sidebar a.active{background:rgba(108,99,255,0.15);color:white}
+    .sidebar a .method{font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;flex-shrink:0}
+    .get{background:rgba(34,197,94,0.2);color:#22c55e}.post{background:rgba(59,130,246,0.2);color:#60a5fa}
+    .patch{background:rgba(245,158,11,0.2);color:#fbbf24}.delete{background:rgba(239,68,68,0.2);color:#f87171}
+    /* MAIN */
+    .main{margin-left:260px;flex:1;padding:2rem 2.5rem;max-width:900px}
+    .page-header{margin-bottom:3rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+    .page-header h1{font-size:2rem;font-weight:800;margin-bottom:.5rem}
+    .page-header p{color:var(--gray);font-size:1rem;line-height:1.6}
+    .base-url{display:inline-flex;align-items:center;gap:.75rem;background:var(--dark);color:white;padding:.6rem 1rem;border-radius:8px;font-family:monospace;font-size:.9rem;margin-top:1rem}
+    .base-url span{background:var(--primary);padding:.2rem .5rem;border-radius:4px;font-size:.75rem}
+    /* SECTIONS */
+    .api-section{margin-bottom:4rem}
+    .section-title{font-size:1.4rem;font-weight:800;margin-bottom:.25rem}
+    .section-desc{color:var(--gray);font-size:.9rem;margin-bottom:2rem}
+    /* ENDPOINT */
+    .endpoint{background:white;border:1px solid var(--border);border-radius:12px;margin-bottom:1.5rem;overflow:hidden}
+    .endpoint-header{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;cursor:pointer;user-select:none}
+    .endpoint-header:hover{background:#fafafa}
+    .method-badge{padding:.35rem .75rem;border-radius:6px;font-size:.8rem;font-weight:700;flex-shrink:0}
+    .badge-get{background:#dcfce7;color:#16a34a}.badge-post{background:#dbeafe;color:#1d4ed8}
+    .badge-patch{background:#fef3c7;color:#b45309}.badge-delete{background:#fee2e2;color:#b91c1c}
+    .endpoint-path{font-family:monospace;font-size:.95rem;font-weight:600;color:var(--dark)}
+    .endpoint-summary{color:var(--gray);font-size:.85rem;margin-left:auto;text-align:right}
+    .endpoint-body{border-top:1px solid var(--border);padding:1.25rem}
+    .endpoint-body.hidden{display:none}
+    /* TABS */
+    .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.25rem}
+    .tab{padding:.5rem 1rem;font-size:.85rem;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+    .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+    .tab-content{display:none}.tab-content.active{display:block}
+    /* CODE */
+    pre{background:var(--dark);color:#e2e8f0;padding:1rem;border-radius:8px;font-size:.82rem;overflow-x:auto;line-height:1.6}
+    code{font-family:'Courier New',monospace}
+    .key{color:#93c5fd}.str{color:#86efac}.num{color:#fca5a5}.bool{color:#fde68a}.comment{color:#6b7280}
+    /* TABLE */
+    table{width:100%;border-collapse:collapse;font-size:.85rem}
+    th{background:#f9fafb;padding:.6rem .75rem;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
+    td{padding:.6rem .75rem;border-bottom:1px solid #f3f4f6;vertical-align:top}
+    .required{background:#fee2e2;color:#b91c1c;font-size:.7rem;padding:.1rem .4rem;border-radius:4px}
+    .optional{background:#f3f4f6;color:var(--gray);font-size:.7rem;padding:.1rem .4rem;border-radius:4px}
+    .type{font-family:monospace;color:var(--primary);font-size:.82rem}
+    /* AUTH BOX */
+    .auth-box{background:linear-gradient(135deg,rgba(108,99,255,0.08),rgba(108,99,255,0.03));border:1px solid rgba(108,99,255,0.2);border-radius:10px;padding:1.25rem;margin-bottom:2rem}
+    .auth-box h3{font-size:.95rem;font-weight:700;margin-bottom:.5rem;color:var(--primary)}
+    .auth-box p{font-size:.85rem;color:var(--gray);line-height:1.6}
+    .auth-box code{background:rgba(108,99,255,0.1);padding:.1rem .4rem;border-radius:4px;font-size:.82rem;color:var(--primary)}
+    /* RESPONSE BADGE */
+    .res-badge{display:inline-block;padding:.2rem .5rem;border-radius:4px;font-size:.75rem;font-weight:700;margin-right:.5rem}
+    .r200{background:#dcfce7;color:#16a34a}.r400{background:#fef3c7;color:#b45309}.r401{background:#fee2e2;color:#b91c1c}.r403{background:#fee2e2;color:#b91c1c}
+    /* FLOW */
+    .flow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:1rem;background:#f9fafb;border-radius:8px;margin-bottom:1.5rem;font-size:.85rem}
+    .flow-step{background:var(--primary);color:white;padding:.3rem .75rem;border-radius:50px;font-weight:600;font-size:.8rem}
+    .flow-arrow{color:var(--gray)}
+    /* NOTICE */
+    .notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:1rem;font-size:.85rem;color:#92400e;margin-bottom:1.5rem}
+    .notice strong{display:block;margin-bottom:.25rem}
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>Helper<span>Near</span></h1>
+    <p>API Reference v1.0</p>
+  </div>
+  <div class="sidebar-section">Getting Started</div>
+  <a href="#intro" class="active">Introduction</a>
+  <a href="#auth-guide">Authentication Guide</a>
+  <div class="sidebar-section">Auth</div>
+  <a href="#send-otp"><span class="method post">POST</span> send-otp</a>
+  <a href="#verify-otp"><span class="method post">POST</span> verify-otp</a>
+  <a href="#refresh"><span class="method post">POST</span> refresh</a>
+  <a href="#logout"><span class="method post">POST</span> logout</a>
+  <div class="sidebar-section">Users</div>
+  <a href="#get-me"><span class="method get">GET</span> /users/me</a>
+  <a href="#update-profile"><span class="method patch">PATCH</span> /users/profile</a>
+  <div class="sidebar-section">Categories</div>
+  <a href="#list-categories"><span class="method get">GET</span> /categories</a>
+  <a href="#create-category"><span class="method post">POST</span> /categories</a>
+  <div class="sidebar-section">Workers</div>
+  <a href="#create-worker"><span class="method post">POST</span> /workers/profile</a>
+  <a href="#get-worker"><span class="method get">GET</span> /workers/profile</a>
+  <a href="#update-location"><span class="method patch">PATCH</span> /workers/location</a>
+  <a href="#update-status"><span class="method patch">PATCH</span> /workers/status</a>
+  <a href="#nearby"><span class="method get">GET</span> /workers/nearby</a>
+  <div class="sidebar-section">Reviews</div>
+  <a href="#add-review"><span class="method post">POST</span> /reviews</a>
+  <a href="#get-reviews"><span class="method get">GET</span> /workers/:id/reviews</a>
+  <div class="sidebar-section">Admin</div>
+  <a href="#admin-workers"><span class="method get">GET</span> /admin/workers</a>
+  <a href="#admin-verify"><span class="method patch">PATCH</span> verify-worker</a>
+  <a href="#admin-block"><span class="method patch">PATCH</span> block-worker</a>
+</nav>
+
+<main class="main">
+
+  <!-- INTRO -->
+  <section class="page-header" id="intro">
+    <h1>HelperNear API Reference</h1>
+    <p>Complete documentation for all backend endpoints. Built with NestJS, PostgreSQL, Prisma, and JWT authentication.</p>
+    <div class="base-url"><span>BASE URL</span> http://localhost:3000/api/v1</div>
+  </section>
+
+  <!-- AUTH GUIDE -->
+  <section class="api-section" id="auth-guide">
+    <div class="section-title">Authentication Guide</div>
+    <div class="section-desc">How the frontend should handle authentication.</div>
+
+    <div class="flow">
+      <span class="flow-step">1. Call send-otp</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">2. User enters OTP</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">3. Call verify-otp</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">4. Store tokens</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">5. Add Bearer header to all requests</span>
+    </div>
+
+    <div class="auth-box">
+      <h3>How to attach token to every request</h3>
+      <p>After login, store the <code>accessToken</code> and add it to every protected API call:</p>
+    </div>
+    <pre><code><span class="comment">// Store tokens after login</span>
+localStorage.setItem(<span class="str">'accessToken'</span>, response.data.accessToken);
+localStorage.setItem(<span class="str">'refreshToken'</span>, response.data.refreshToken);
+
+<span class="comment">// Add to every API call</span>
+const token = localStorage.getItem(<span class="str">'accessToken'</span>);
+fetch(<span class="str">'/api/v1/users/me'</span>, {
+  headers: {
+    <span class="str">'Authorization'</span>: <span class="str">`Bearer ${token}`</span>,
+    <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>
+  }
+});
+
+<span class="comment">// If you get 401, refresh the token</span>
+const res = await fetch(<span class="str">'/api/v1/auth/refresh'</span>, {
+  method: <span class="str">'POST'</span>,
+  body: JSON.stringify({ refreshToken: localStorage.getItem(<span class="str">'refreshToken'</span>) })
+});
+const { data } = await res.json();
+localStorage.setItem(<span class="str">'accessToken'</span>, data.accessToken);</code></pre>
+  </section>
+
+  <!-- AUTH SECTION -->
+  <section class="api-section">
+    <div class="section-title">Auth</div>
+    <div class="section-desc">Phone-based OTP authentication. No passwords needed.</div>
+
+    <!-- send-otp -->
+    <div class="endpoint" id="send-otp">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-post">POST</span>
+        <span class="endpoint-path">/auth/send-otp</span>
+        <span class="endpoint-summary">Send OTP to phone number</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <p style="color:var(--gray);font-size:.9rem;margin-bottom:1rem">Sends a 6-digit OTP to the user's phone via Twilio SMS. In dev mode, OTP is logged to the server console. Rate limited to 3 requests per 10 minutes.</p>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'body')">Request Body</div>
+          <div class="tab" onclick="switchTab(this,'response')">Response</div>
+          <div class="tab" onclick="switchTab(this,'example')">Code Example</div>
+        </div>
+        <div class="tab-content active">
+          <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr><td>phone</td><td class="type">string</td><td><span class="required">Required</span></td><td>Phone in E.164 format e.g. +919876543210</td></tr></table>
+        </div>
+        <div class="tab-content">
+          <p><span class="res-badge r200">200</span> OTP sent successfully</p>
+          <pre><code>{ <span class="key">"success"</span>: <span class="bool">true</span>, <span class="key">"message"</span>: <span class="str">"OTP sent successfully"</span>, <span class="key">"data"</span>: { <span class="key">"message"</span>: <span class="str">"OTP sent successfully"</span> } }</code></pre>
+          <p><span class="res-badge r403">403</span> Too many requests</p>
+        </div>
+        <div class="tab-content">
+          <pre><code>const res = await fetch(<span class="str">'/api/v1/auth/send-otp'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+  body: JSON.stringify({ <span class="key">phone</span>: <span class="str">'+919876543210'</span> })
+});
+const data = await res.json();</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- verify-otp -->
+    <div class="endpoint" id="verify-otp">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-post">POST</span>
+        <span class="endpoint-path">/auth/verify-otp</span>
+        <span class="endpoint-summary">Verify OTP → get JWT tokens</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <p style="color:var(--gray);font-size:.9rem;margin-bottom:1rem">Verifies the OTP and returns access + refresh tokens. Creates a new user account if phone number is new. OTP expires in 5 minutes and can only be used once.</p>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'body')">Request Body</div>
+          <div class="tab" onclick="switchTab(this,'response')">Response</div>
+          <div class="tab" onclick="switchTab(this,'example')">Code Example</div>
+        </div>
+        <div class="tab-content active">
+          <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr><td>phone</td><td class="type">string</td><td><span class="required">Required</span></td><td>Same phone used in send-otp</td></tr>
+          <tr><td>otp</td><td class="type">string</td><td><span class="required">Required</span></td><td>6-digit OTP received via SMS</td></tr></table>
+        </div>
+        <div class="tab-content">
+          <p><span class="res-badge r200">200</span> Login successful</p>
+          <pre><code>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"message"</span>: <span class="str">"Login successful"</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"user"</span>: { <span class="key">"id"</span>: <span class="str">"uuid"</span>, <span class="key">"phone"</span>: <span class="str">"+919876543210"</span>, <span class="key">"role"</span>: <span class="str">"CUSTOMER"</span>, <span class="key">"isActive"</span>: <span class="bool">true</span> },
+    <span class="key">"accessToken"</span>: <span class="str">"eyJhbGci..."</span>,
+    <span class="key">"refreshToken"</span>: <span class="str">"eyJhbGci..."</span>
+  }
+}</code></pre>
+          <p><span class="res-badge r400">400</span> Invalid or expired OTP</p>
+        </div>
+        <div class="tab-content">
+          <pre><code>const res = await fetch(<span class="str">'/api/v1/auth/verify-otp'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+  body: JSON.stringify({ <span class="key">phone</span>: <span class="str">'+919876543210'</span>, <span class="key">otp</span>: <span class="str">'123456'</span> })
+});
+const { data } = await res.json();
+<span class="comment">// Save tokens</span>
+localStorage.setItem(<span class="str">'accessToken'</span>, data.accessToken);
+localStorage.setItem(<span class="str">'refreshToken'</span>, data.refreshToken);</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- refresh -->
+    <div class="endpoint" id="refresh">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-post">POST</span>
+        <span class="endpoint-path">/auth/refresh</span>
+        <span class="endpoint-summary">Refresh access token</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <p style="color:var(--gray);font-size:.9rem;margin-bottom:1rem">Access tokens expire in 15 minutes. Call this endpoint with the refresh token to get a new access token without making the user login again. Refresh tokens are valid for 7 days.</p>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'body')">Request Body</div>
+          <div class="tab" onclick="switchTab(this,'response')">Response</div>
+        </div>
+        <div class="tab-content active">
+          <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr><td>refreshToken</td><td class="type">string</td><td><span class="required">Required</span></td><td>The refresh token from verify-otp response</td></tr></table>
+        </div>
+        <div class="tab-content">
+          <pre><code>{ <span class="key">"data"</span>: { <span class="key">"accessToken"</span>: <span class="str">"eyJ..."</span>, <span class="key">"refreshToken"</span>: <span class="str">"eyJ..."</span> } }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- logout -->
+    <div class="endpoint" id="logout">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-post">POST</span>
+        <span class="endpoint-path">/auth/logout</span>
+        <span class="endpoint-summary">Logout — requires Bearer token</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 Protected endpoint</strong>Requires <code>Authorization: Bearer &lt;accessToken&gt;</code> header.</div>
+        <p style="color:var(--gray);font-size:.9rem;margin-bottom:1rem">Logs out the current user. Frontend must delete stored tokens after calling this.</p>
+        <pre><code><span class="comment">// After calling logout, clear tokens</span>
+localStorage.removeItem(<span class="str">'accessToken'</span>);
+localStorage.removeItem(<span class="str">'refreshToken'</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- USERS -->
+  <section class="api-section">
+    <div class="section-title">Users</div>
+    <div class="section-desc">All user endpoints require a valid Bearer token.</div>
+    <div class="endpoint" id="get-me">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-get" style="background:#dcfce7;color:#16a34a">GET</span>
+        <span class="endpoint-path">/users/me</span>
+        <span class="endpoint-summary">Get current logged-in user</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 Protected</strong>Add <code>Authorization: Bearer &lt;token&gt;</code></div>
+        <p style="color:var(--gray);font-size:.9rem;margin-bottom:1rem">Returns the profile of the currently authenticated user including role and account status.</p>
+        <pre><code>{ <span class="key">"id"</span>: <span class="str">"uuid"</span>, <span class="key">"name"</span>: <span class="str">"Raj Kumar"</span>, <span class="key">"phone"</span>: <span class="str">"+919876543210"</span>, <span class="key">"role"</span>: <span class="str">"CUSTOMER"</span>, <span class="key">"isActive"</span>: <span class="bool">true</span> }</code></pre>
+      </div>
+    </div>
+    <div class="endpoint" id="update-profile">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-patch">PATCH</span>
+        <span class="endpoint-path">/users/profile</span>
+        <span class="endpoint-summary">Update user profile</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 Protected</strong>Add <code>Authorization: Bearer &lt;token&gt;</code></div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td>name</td><td class="type">string</td><td><span class="optional">Optional</span></td><td>Display name</td></tr></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="api-section">
+    <div class="section-title">Categories</div>
+    <div class="section-desc">Service categories like Plumber, Electrician, Maid. GET is public, POST/PATCH/DELETE require Admin role.</div>
+    <div class="endpoint" id="list-categories">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-get" style="background:#dcfce7;color:#16a34a">GET</span>
+        <span class="endpoint-path">/categories</span>
+        <span class="endpoint-summary">List all categories — Public</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <p style="color:var(--gray);font-size:.9rem;margin-bottom:1rem">Returns all available service categories. No auth required. Use this to populate category dropdowns in the app.</p>
+        <pre><code>[
+  { <span class="key">"id"</span>: <span class="str">"uuid"</span>, <span class="key">"name"</span>: <span class="str">"Plumber"</span>, <span class="key">"icon"</span>: <span class="str">"🔧"</span> },
+  { <span class="key">"id"</span>: <span class="str">"uuid"</span>, <span class="key">"name"</span>: <span class="str">"Electrician"</span>, <span class="key">"icon"</span>: <span class="str">"⚡"</span> }
+]</code></pre>
+      </div>
+    </div>
+    <div class="endpoint" id="create-category">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-post">POST</span>
+        <span class="endpoint-path">/categories</span>
+        <span class="endpoint-summary">Create category — Admin only</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 Admin only</strong>Requires Bearer token with ADMIN role.</div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td>name</td><td class="type">string</td><td><span class="required">Required</span></td><td>Category name e.g. "Plumber"</td></tr>
+        <tr><td>icon</td><td class="type">string</td><td><span class="optional">Optional</span></td><td>Emoji or icon URL</td></tr></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKERS -->
+  <section class="api-section">
+    <div class="section-title">Workers</div>
+    <div class="section-desc">Worker profile management. User must have WORKER role.</div>
+    <div class="endpoint" id="create-worker">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-post">POST</span>
+        <span class="endpoint-path">/workers/profile</span>
+        <span class="endpoint-summary">Create worker profile</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 Protected — WORKER role</strong></div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td>bio</td><td class="type">string</td><td><span class="optional">Optional</span></td><td>Short description</td></tr>
+        <tr><td>experienceYears</td><td class="type">number</td><td><span class="optional">Optional</span></td><td>Years of experience</td></tr>
+        <tr><td>priceRange</td><td class="type">string</td><td><span class="optional">Optional</span></td><td>e.g. "₹200-500/hr"</td></tr>
+        <tr><td>categoryIds</td><td class="type">string[]</td><td><span class="required">Required</span></td><td>Array of category UUIDs</td></tr>
+        <tr><td>latitude</td><td class="type">number</td><td><span class="required">Required</span></td><td>GPS latitude</td></tr>
+        <tr><td>longitude</td><td class="type">number</td><td><span class="required">Required</span></td><td>GPS longitude</td></tr></table>
+      </div>
+    </div>
+    <div class="endpoint" id="update-location">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-patch">PATCH</span>
+        <span class="endpoint-path">/workers/location</span>
+        <span class="endpoint-summary">Update worker GPS location</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 Protected — WORKER role</strong>Call this periodically from the app to keep location fresh.</div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th></tr>
+        <tr><td>latitude</td><td class="type">number</td><td><span class="required">Required</span></td></tr>
+        <tr><td>longitude</td><td class="type">number</td><td><span class="required">Required</span></td></tr></table>
+      </div>
+    </div>
+    <div class="endpoint" id="update-status">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-patch">PATCH</span>
+        <span class="endpoint-path">/workers/status</span>
+        <span class="endpoint-summary">Update availability status</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 Protected — WORKER role</strong></div>
+        <table><tr><th>Field</th><th>Type</th><th>Values</th></tr>
+        <tr><td>status</td><td class="type">enum</td><td><code>AVAILABLE</code> | <code>BUSY</code> | <code>OFFLINE</code></td></tr></table>
+      </div>
+    </div>
+    <div class="endpoint" id="nearby">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-get" style="background:#dcfce7;color:#16a34a">GET</span>
+        <span class="endpoint-path">/workers/nearby</span>
+        <span class="endpoint-summary">Search nearby workers — Core feature</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <p style="color:var(--gray);font-size:.9rem;margin-bottom:1rem">Returns workers sorted by distance within the given radius. This is the core geo search feature of HelperNear.</p>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'params')">Query Params</div>
+          <div class="tab" onclick="switchTab(this,'response')">Response</div>
+          <div class="tab" onclick="switchTab(this,'example')">Code Example</div>
+        </div>
+        <div class="tab-content active">
+          <table><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr><td>lat</td><td class="type">number</td><td><span class="required">Required</span></td><td>User's latitude</td></tr>
+          <tr><td>lng</td><td class="type">number</td><td><span class="required">Required</span></td><td>User's longitude</td></tr>
+          <tr><td>radius</td><td class="type">number</td><td><span class="optional">Optional</span></td><td>Search radius in km (default: 5)</td></tr>
+          <tr><td>category</td><td class="type">string</td><td><span class="optional">Optional</span></td><td>Category UUID to filter by</td></tr></table>
+        </div>
+        <div class="tab-content">
+          <pre><code>[
+  {
+    <span class="key">"id"</span>: <span class="str">"uuid"</span>, <span class="key">"name"</span>: <span class="str">"Rajesh Kumar"</span>,
+    <span class="key">"distance"</span>: <span class="num">0.8</span>, <span class="key">"rating"</span>: <span class="num">4.8</span>,
+    <span class="key">"status"</span>: <span class="str">"AVAILABLE"</span>, <span class="key">"phone"</span>: <span class="str">"+91..."</span>,
+    <span class="key">"categories"</span>: [{ <span class="key">"name"</span>: <span class="str">"Plumber"</span> }]
+  }
+]</code></pre>
+        </div>
+        <div class="tab-content">
+          <pre><code><span class="comment">// Get user GPS location first</span>
+navigator.geolocation.getCurrentPosition(async (pos) => {
+  const { latitude, longitude } = pos.coords;
+  const res = await fetch(
+    <span class="str">`/api/v1/workers/nearby?lat=${latitude}&lng=${longitude}&radius=5`</span>,
+    { headers: { <span class="str">'Authorization'</span>: <span class="str">`Bearer ${token}`</span> } }
+  );
+  const workers = await res.json();
+});</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="api-section">
+    <div class="section-title">Reviews</div>
+    <div class="section-desc">Ratings and reviews for workers.</div>
+    <div class="endpoint" id="add-review">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-post">POST</span>
+        <span class="endpoint-path">/reviews</span>
+        <span class="endpoint-summary">Submit a review for a worker</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 Protected — CUSTOMER role</strong></div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td>workerId</td><td class="type">string</td><td><span class="required">Required</span></td><td>Worker profile UUID</td></tr>
+        <tr><td>rating</td><td class="type">number</td><td><span class="required">Required</span></td><td>1 to 5</td></tr>
+        <tr><td>comment</td><td class="type">string</td><td><span class="optional">Optional</span></td><td>Text review</td></tr></table>
+      </div>
+    </div>
+    <div class="endpoint" id="get-reviews">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-get" style="background:#dcfce7;color:#16a34a">GET</span>
+        <span class="endpoint-path">/workers/:id/reviews</span>
+        <span class="endpoint-summary">Get all reviews for a worker</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <p style="color:var(--gray);font-size:.9rem">Public endpoint. Replace <code>:id</code> with the worker profile UUID.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="api-section">
+    <div class="section-title">Admin</div>
+    <div class="section-desc">All admin endpoints require Bearer token with ADMIN role.</div>
+    <div class="endpoint" id="admin-workers">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-get" style="background:#dcfce7;color:#16a34a">GET</span>
+        <span class="endpoint-path">/admin/workers</span>
+        <span class="endpoint-summary">List all workers (admin)</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 ADMIN only</strong></div>
+        <p style="color:var(--gray);font-size:.9rem">Returns all workers including unverified ones. Supports pagination via <code>?page=1&limit=20</code>.</p>
+      </div>
+    </div>
+    <div class="endpoint" id="admin-verify">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-patch">PATCH</span>
+        <span class="endpoint-path">/admin/verify-worker</span>
+        <span class="endpoint-summary">Approve/verify a worker</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 ADMIN only</strong></div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th></tr>
+        <tr><td>workerId</td><td class="type">string</td><td><span class="required">Required</span></td></tr></table>
+      </div>
+    </div>
+    <div class="endpoint" id="admin-block">
+      <div class="endpoint-header" onclick="toggle(this)">
+        <span class="method-badge badge-patch">PATCH</span>
+        <span class="endpoint-path">/admin/block-worker</span>
+        <span class="endpoint-summary">Block/unblock a worker</span>
+      </div>
+      <div class="endpoint-body hidden">
+        <div class="notice"><strong>🔒 ADMIN only</strong></div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th></tr>
+        <tr><td>workerId</td><td class="type">string</td><td><span class="required">Required</span></td></tr></table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('hidden');
+}
+function switchTab(tab, name) {
+  const parent = tab.closest('.endpoint-body');
+  parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  tab.classList.add('active');
+  const contents = parent.querySelectorAll('.tab-content');
+  const tabs = parent.querySelectorAll('.tab');
+  const idx = Array.from(tabs).indexOf(tab);
+  if (contents[idx]) contents[idx].classList.add('active');
+}
+// Highlight active sidebar link on scroll
+const sections = document.querySelectorAll('[id]');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+  document.querySelectorAll('.sidebar a').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+</body>
+</html>
