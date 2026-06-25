@@ -747,6 +747,7 @@ input, select, textarea {
   padding: .75rem 1rem;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
+  overflow: hidden;
 }
 
 .chips {
@@ -754,11 +755,15 @@ input, select, textarea {
   gap: .45rem;
   flex-wrap: nowrap;
   overflow-x: auto;
+  overflow-y: hidden;
   flex: 1;
+  min-width: 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
   cursor: grab;
+  padding-bottom: 2px;
 }
 .chips::-webkit-scrollbar { display: none; }
 
@@ -1848,7 +1853,7 @@ input, select, textarea {
 }
 
 .loc-modal {
-  background: var(--card-bg);
+  background: #1c1c1c;
   border-radius: 20px 20px 0 0;
   width: 100%;
   max-width: 480px;

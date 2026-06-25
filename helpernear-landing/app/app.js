@@ -1446,6 +1446,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyTranslations();
   setupOtpBoxes();
 
+  const hideSplash = () => {
+    const s = document.getElementById('splash-screen');
+    if (s) { s.style.opacity = '0'; s.style.transition = 'opacity .25s'; setTimeout(() => s.remove(), 260); }
+  };
+
   if (token()) {
     const res = await fetch(API + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token() } }).catch(() => null);
     if (res && res.ok) {
@@ -1453,17 +1458,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (data?.data) store.set('hn_user', JSON.stringify({ ...(currentUser()||{}), ...data.data }));
       updateNavAvatar();
       await checkWorkerStatus();
+      hideSplash();
       showPage('home');
       loadCategories();
       silentGpsLocation();
       initFcm();
     } else {
       store.remove('hn_token'); store.remove('hn_user');
+      hideSplash();
       showPage('login');
     }
   } else {
+    hideSplash();
     showPage('login');
-    // Load stats for login trust badges
     updateHero();
   }
 });

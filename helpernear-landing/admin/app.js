@@ -2806,9 +2806,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (s) s.value = '';
   }, 100);
 
+  const hideSplash = () => {
+    const s = document.getElementById('admin-splash');
+    if (s) { s.style.opacity = '0'; s.style.transition = 'opacity .25s'; setTimeout(() => s.remove(), 260); }
+  };
+
   if (token()) {
+    hideSplash();
     showAdminApp();
   } else {
+    hideSplash();
     showAdminLogin();
   }
 });
