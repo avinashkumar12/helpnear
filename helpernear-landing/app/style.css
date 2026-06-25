@@ -429,14 +429,22 @@ input, select, textarea {
 .form-group textarea,
 .form-group select {
   width: 100%;
-  padding: .8rem 1rem;
+  padding: .8rem 2.5rem .8rem 1rem;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: .95rem;
   color: var(--text);
   background: var(--surface);
+  font-family: var(--font);
+  font-weight: 500;
   transition: border-color .2s, box-shadow .2s;
   outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23FF6B35' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
 }
 .form-group input:focus,
 .form-group textarea:focus,
@@ -802,19 +810,25 @@ input, select, textarea {
   padding-left: 1rem;
 }
 .radius-wrap select {
-  padding: .4rem .7rem;
+  padding: .4rem 2rem .4rem .9rem;
   border: 1.5px solid var(--border);
   border-radius: 50px;
   font-size: .85rem;
   outline: none;
   cursor: pointer;
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   font-family: var(--font);
-  font-weight: 500;
-  transition: border-color .2s;
+  font-weight: 600;
+  transition: border-color .2s, background .2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23FF6B35' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .65rem center;
 }
-.radius-wrap select:focus { border-color: var(--primary); }
+.radius-wrap select:focus { border-color: var(--primary); outline: none; }
+.radius-wrap select:hover { border-color: var(--primary); background-color: var(--primary-light); }
 
 /* ── Advanced filters ── */
 .adv-filter-bar {
@@ -860,18 +874,38 @@ input, select, textarea {
 .adv-filter-group { display: flex; align-items: center; gap: .3rem; }
 .adv-filter-label { color: #f59e0b; font-weight: 700; }
 .adv-select {
-  padding: .3rem .6rem;
+  padding: .3rem 1.8rem .3rem .7rem;
   border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: .8rem;
   outline: none;
   cursor: pointer;
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   font-family: var(--font);
-  font-weight: 500;
+  font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23FF6B35' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .55rem center;
+  transition: border-color .2s, background .2s;
 }
-.adv-select:focus { border-color: var(--primary); }
+.adv-select:focus { border-color: var(--primary); outline: none; }
+.adv-select:hover { border-color: var(--primary); background-color: var(--primary-light); }
+
+/* Style native select option list */
+select option {
+  background: #1e1e1e;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: .9rem;
+  padding: .5rem;
+}
+select option:checked, select option:hover {
+  background: var(--primary);
+  color: #fff;
+}
 
 .results-wrap { flex: 1; }
 
