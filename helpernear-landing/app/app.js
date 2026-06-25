@@ -94,6 +94,16 @@ function showPage(name) {
   window.scrollTo(0, 0);
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
+  // Update bottom nav active state
+  const navMap = { home: 'bnav-home', profile: 'bnav-profile', 'worker-dashboard': 'bnav-worker' };
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+  const activeNav = navMap[name];
+  if (activeNav) document.getElementById(activeNav)?.classList.add('active');
+  // Show/hide bottom nav only on home page context pages
+  const showNav = ['home','profile','worker-dashboard'].includes(name);
+  const bottomNav = document.getElementById('bottom-nav');
+  if (bottomNav) bottomNav.style.display = showNav ? '' : 'none';
+
   if (name === 'home')             { updateFab(); updateHero(); }
   if (name === 'profile')          { loadMyProfile(); }
   if (name === 'register')         { loadRegCategories(); }

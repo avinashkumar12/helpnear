@@ -2,16 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
   <title>HelperNear – Find Workers Near You</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/app/style.css"/>
   <link rel="manifest" href="/app/manifest.json"/>
   <meta name="theme-color" content="#FF6B35"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="HelperNear"/>
+  <meta name="apple-touch-fullscreen" content="yes"/>
+  <link rel="apple-touch-icon" href="/assets/logo-icon.svg"/>
+  <meta name="format-detection" content="telephone=no"/>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -206,6 +210,22 @@
   <button class="fab-register hidden" id="fab-register" onclick="showPage('register')" title="Become a Worker">
     <i data-lucide="hard-hat"></i> <span>Become a Worker</span>
   </button>
+
+  <!-- Mobile bottom nav -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-item active" id="bnav-home" onclick="showPage('home')">
+      <i data-lucide="home"></i>Home
+    </button>
+    <button class="bottom-nav-item" id="bnav-search" onclick="document.getElementById('search-input').focus()">
+      <i data-lucide="search"></i>Search
+    </button>
+    <button class="bottom-nav-item" id="bnav-profile" onclick="showPage('profile')">
+      <i data-lucide="user"></i>Profile
+    </button>
+    <button class="bottom-nav-item" id="bnav-worker" onclick="showPage('worker-dashboard')">
+      <i data-lucide="briefcase"></i>Work
+    </button>
+  </nav>
 </div>
 
 <!-- ═══ WORKER PROFILE PAGE ═══ -->
