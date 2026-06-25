@@ -42,6 +42,13 @@ button [data-lucide], a [data-lucide] { width: 0.95em; height: 0.95em; }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Hide all scrollbars globally but keep scrolling */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar { display: none; }
+
 html {
   scroll-behavior: smooth;
   height: 100%;
