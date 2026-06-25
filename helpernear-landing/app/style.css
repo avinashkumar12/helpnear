@@ -82,8 +82,8 @@ body {
   input, select, textarea { font-size: 16px !important; }
 }
 
-/* Smooth touch scrolling everywhere */
-* { -webkit-overflow-scrolling: touch; }
+/* Smooth touch scrolling for scrollable containers */
+.chips, .loc-modal, .home-body, .page { -webkit-overflow-scrolling: touch; }
 
 /* Better tap targets on mobile */
 @media (max-width: 600px) {

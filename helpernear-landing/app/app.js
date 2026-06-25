@@ -996,6 +996,21 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.onmouseout  = () => highlightStars(selectedReviewRating);
     btn.onclick     = () => { selectedReviewRating = val; highlightStars(val); };
   });
+
+  // Drag-to-scroll for all .chips containers (mouse + touch)
+  document.querySelectorAll('.chips').forEach(el => {
+    let isDown = false, startX = 0, scrollLeft = 0;
+    el.addEventListener('mousedown', e => {
+      isDown = true; el.style.cursor = 'grabbing';
+      startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft;
+    });
+    el.addEventListener('mouseleave', () => { isDown = false; el.style.cursor = 'grab'; });
+    el.addEventListener('mouseup', () => { isDown = false; el.style.cursor = 'grab'; });
+    el.addEventListener('mousemove', e => {
+      if (!isDown) return; e.preventDefault();
+      el.scrollLeft = scrollLeft - (e.pageX - el.offsetLeft - startX);
+    });
+  });
 });
 
 function highlightStars(val) {
