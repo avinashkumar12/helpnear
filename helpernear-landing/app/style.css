@@ -728,6 +728,8 @@ input, select, textarea {
   flex: 1;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
 }
 .chips::-webkit-scrollbar { display: none; }
 
@@ -1591,7 +1593,7 @@ input, select, textarea {
   align-items: center;
   gap: .5rem;
   transition: all .2s;
-  z-index: 90;
+  z-index: 500;
 }
 .fab-register:hover {
   box-shadow: 0 8px 28px rgba(255,107,53,.55);
@@ -1802,9 +1804,7 @@ input, select, textarea {
 .loc-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0,0,0,.85);
   z-index: 900;
   display: flex;
   align-items: flex-end;
@@ -2240,10 +2240,10 @@ input, select, textarea {
 
 
 /* ── PROMO BANNER CAROUSEL (app, post-login) ── */
-#app-banners { padding: 1rem 1rem 0; }
-.banner-carousel { position: relative; border-radius: 14px; overflow: hidden; background: var(--card); }
+#app-banners { padding: 0; margin: 0; }
+.banner-carousel { position: relative; border-radius: 0; overflow: hidden; background: var(--card); }
 .banner-track { display: flex; transition: transform .42s cubic-bezier(.4,0,.2,1); will-change: transform; }
-.banner-slide { min-width: 100%; position: relative; height: 140px; flex-shrink: 0; overflow: hidden; text-decoration: none; display: block; border-radius: 14px; }
+.banner-slide { min-width: 100%; position: relative; height: 200px; flex-shrink: 0; overflow: hidden; text-decoration: none; display: block; border-radius: 0; }
 .banner-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .banner-slide-overlay { position: absolute; inset: 0; background: linear-gradient(90deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.15) 65%,transparent 100%); border-radius: 14px; }
 .banner-slide-no-img { background: linear-gradient(135deg, var(--primary) 0%, #ff8c5a 100%); }
