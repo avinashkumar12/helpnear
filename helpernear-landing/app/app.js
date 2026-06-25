@@ -116,7 +116,7 @@ async function sendOtp() {
   showLoader();
   const res = await fetch(API + '/auth/send-otp', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone })
+    body: JSON.stringify({ phone: '+91' + phone })
   }).catch(() => null);
   hideLoader();
   if (!res) return;
@@ -159,7 +159,7 @@ async function verifyOtp() {
   showLoader();
   const res = await fetch(API + '/auth/verify-otp', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone, otp })
+    body: JSON.stringify({ phone: '+91' + phone, otp })
   }).catch(() => null);
   hideLoader();
   if (!res) { showLoginToast('Network error.', 'error'); return; }
