@@ -2314,23 +2314,57 @@ select option:checked, select option:hover {
 
 
 /* ── PROMO BANNER CAROUSEL (app, post-login) ── */
-#app-banners { padding: 0; margin: 0; }
-.banner-carousel { position: relative; border-radius: 0; overflow: hidden; background: var(--card); }
+/* ── Banner section ── */
+#app-banners {
+  margin: 1rem 1rem 0.5rem;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,.35);
+}
+.banners-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.banners-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.banners-label svg { width: 13px; height: 13px; }
+.banner-carousel { position: relative; border-radius: 14px; overflow: hidden; background: var(--card); }
 .banner-track { display: flex; transition: transform .42s cubic-bezier(.4,0,.2,1); will-change: transform; }
-.banner-slide { min-width: 100%; position: relative; height: 200px; flex-shrink: 0; overflow: hidden; text-decoration: none; display: block; border-radius: 0; }
+.banner-slide { min-width: 100%; position: relative; height: 180px; flex-shrink: 0; overflow: hidden; text-decoration: none; display: block; border-radius: 14px; }
 .banner-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.banner-slide-overlay { position: absolute; inset: 0; background: linear-gradient(90deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.15) 65%,transparent 100%); border-radius: 14px; }
-.banner-slide-no-img { background: linear-gradient(135deg, var(--primary) 0%, #ff8c5a 100%); }
+.banner-slide-overlay { position: absolute; inset: 0; background: linear-gradient(90deg,rgba(0,0,0,.7) 0%,rgba(0,0,0,.2) 60%,transparent 100%); }
+.banner-slide-no-img { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%); }
 .banner-slide-text { position: absolute; bottom: 0; left: 0; padding: 1rem 1.25rem; }
-.banner-slide-text h3 { font-size: .95rem; font-weight: 800; color: #fff; margin-bottom: .2rem; line-height: 1.25; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
-.banner-slide-text p { font-size: .75rem; color: rgba(255,255,255,.85); line-height: 1.4; }
-.banner-prev, .banner-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.4); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: background .2s; }
-.banner-prev { left: 8px; }
-.banner-next { right: 8px; }
-.banner-prev:hover, .banner-next:hover { background: rgba(0,0,0,.65); }
-.banner-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 10; }
-.banner-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.4); border: none; cursor: pointer; padding: 0; transition: background .2s, transform .2s; }
-.banner-dot.active { background: #fff; transform: scale(1.35); }
+.banner-slide-text h3 { font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: .25rem; line-height: 1.25; text-shadow: 0 1px 8px rgba(0,0,0,.5); }
+.banner-slide-text p { font-size: .75rem; color: rgba(255,255,255,.82); line-height: 1.4; }
+.banner-slide-badge {
+  display: inline-block;
+  background: var(--primary);
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: .4rem;
+}
+.banner-prev, .banner-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.1); color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: background .2s; backdrop-filter: blur(4px); }
+.banner-prev { left: 10px; }
+.banner-next { right: 10px; }
+.banner-prev:hover, .banner-next:hover { background: rgba(0,0,0,.7); }
+.banner-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 10; }
+.banner-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.35); border: none; cursor: pointer; padding: 0; transition: background .2s, width .2s, border-radius .2s; }
+.banner-dot.active { background: #fff; width: 18px; border-radius: 3px; }
 
 /* ══════════════════════════════
    MOBILE BOTTOM NAV BAR

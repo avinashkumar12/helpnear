@@ -149,16 +149,6 @@
     </div>
   </div>
 
-  <!-- PROMO BANNER CAROUSEL (shown after login) -->
-  <div id="app-banners" style="display:none; width:100%;">
-    <div class="banner-carousel">
-      <div class="banner-track" id="app-banner-track"></div>
-      <button class="banner-prev" id="app-banner-prev" aria-label="Previous">&#8249;</button>
-      <button class="banner-next" id="app-banner-next" aria-label="Next">&#8250;</button>
-      <div class="banner-dots" id="app-banner-dots"></div>
-    </div>
-  </div>
-
   <div class="home-body">
     <div class="filter-bar">
       <div class="chips" id="cat-chips">
@@ -197,6 +187,19 @@
           <option value="rating"   data-i18n-opt="filter.sort_rating">Top rated</option>
           <option value="reviews"  data-i18n-opt="filter.sort_reviews">Most reviewed</option>
         </select>
+      </div>
+    </div>
+
+    <!-- PROMO BANNER CAROUSEL (shown after login) -->
+    <div id="app-banners" style="display:none;">
+      <div class="banners-header">
+        <span class="banners-label"><i data-lucide="zap"></i> Offers for you</span>
+      </div>
+      <div class="banner-carousel">
+        <div class="banner-track" id="app-banner-track"></div>
+        <button class="banner-prev" id="app-banner-prev" aria-label="Previous">&#8249;</button>
+        <button class="banner-next" id="app-banner-next" aria-label="Next">&#8250;</button>
+        <div class="banner-dots" id="app-banner-dots"></div>
       </div>
     </div>
 
