@@ -602,6 +602,9 @@ input, select, textarea {
   background: var(--white);
 }
 
+/* Mobile-only elements: hidden by default */
+.mob-header { display: none; }
+
 /* ── Hero Banner ── */
 .home-hero {
   background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 50%, #ffb347 100%);
@@ -2495,8 +2498,18 @@ select option:checked, select option:hover {
     padding: 0 0 calc(74px + env(safe-area-inset-bottom));
     margin: 0;
   }
-  .filter-bar { padding: .5rem .875rem; border-bottom: 1px solid var(--border); }
-  .adv-filter-bar { padding: .5rem .875rem; }
+  .filter-bar {
+    padding: .5rem .875rem;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    margin-bottom: 0;
+  }
+  .adv-filter-bar { padding: .5rem .875rem; gap: .5rem; border-bottom: 1px solid var(--border); }
   #app-banners { margin: .75rem .875rem .25rem; }
 
   /* ── 7. Worker cards: single column, edge-to-edge feel ── */

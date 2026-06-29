@@ -104,6 +104,9 @@ function showPage(name) {
   const bottomNav = document.getElementById('bottom-nav');
   if (bottomNav) bottomNav.style.display = showNav ? '' : 'none';
 
+  // Scroll page to top (fixed pages don't respond to window.scrollTo)
+  if (target) target.scrollTop = 0;
+
   if (name === 'home')             { updateFab(); updateHero(); }
   if (name === 'profile')          { loadMyProfile(); }
   if (name === 'register')         { loadRegCategories(); }

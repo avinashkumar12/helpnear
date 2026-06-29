@@ -2441,3 +2441,80 @@ a { cursor: pointer; text-decoration: none; }
   margin-top: .4rem;
 }
 .setting-key-hint svg { width: 13px; height: 13px; }
+
+/* ══════════════════════════════
+   ADMIN MOBILE ENHANCEMENTS
+   ══════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Compact topbar */
+  .topbar { height: 54px; padding: 0 1rem; }
+  .topbar-title { font-size: 1rem; font-weight: 700; }
+
+  /* Section padding */
+  .section { padding: .875rem; gap: .875rem; }
+
+  /* Stats: 2 columns */
+  .stats-grid { grid-template-columns: 1fr 1fr !important; gap: .625rem; }
+  .stat-card { padding: .875rem 1rem; }
+  .stat-value { font-size: 1.5rem; }
+  .stat-label { font-size: .72rem; }
+
+  /* Tables: horizontal scroll with snap */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+  .data-table {
+    min-width: 520px;
+    font-size: .82rem;
+  }
+  .data-table th,
+  .data-table td {
+    padding: .65rem .85rem;
+    white-space: nowrap;
+  }
+  /* First column (checkbox) very narrow */
+  .data-table th:first-child,
+  .data-table td:first-child { width: 36px; padding: .65rem .5rem; }
+
+  /* Table card container: slight inset shadow to hint scrollability */
+  .table-card {
+    box-shadow: inset -8px 0 12px -8px rgba(0,0,0,.3), var(--shadow, none);
+  }
+
+  /* Table toolbar: stack */
+  .table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .5rem;
+  }
+  .table-toolbar-right { width: 100%; justify-content: flex-end; }
+  .table-search { min-width: unset; width: 100%; }
+
+  /* Tabs: full width equal */
+  .tabs { gap: 0; width: 100%; }
+  .tab-btn { flex: 1; justify-content: center; font-size: .8rem; padding: .5rem .5rem; }
+
+  /* Modal: bottom sheet on mobile */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-box {
+    border-radius: 20px 20px 0 0;
+    max-height: 92dvh;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr !important; gap: .5rem; }
+  .stat-value { font-size: 1.3rem; }
+  .section { padding: .75rem; gap: .75rem; }
+}

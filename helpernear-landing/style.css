@@ -410,7 +410,12 @@ section h2 {
   .hero-visual { display: none; }
   .footer-grid { grid-template-columns: 1fr; }
   .download-card { padding: 2rem 1.5rem; }
-  .cat-grid { grid-template-columns: repeat(4, 1fr); }
+  .cat-grid { grid-template-columns: repeat(3, 1fr); gap: .75rem; }
+  .banner-slide { height: 180px; }
+  .banner-slide-text { padding: 1.25rem 1.25rem; }
+  .banner-slide-text h3 { font-size: 1rem; }
+  .banner-slide-text p { font-size: .78rem; }
+  .banner-prev, .banner-next { width: 32px; height: 32px; font-size: 1.1rem; }
 }
 
 /* ── PROMO BANNER CAROUSEL ── */
@@ -431,11 +436,93 @@ section h2 {
 .banner-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
 .banner-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.45); border: none; cursor: pointer; padding: 0; transition: background .2s, transform .2s; }
 .banner-dot.active { background: #fff; transform: scale(1.3); }
-@media (max-width: 600px) {
-  .banner-slide { height: 180px; }
-  .banner-slide-text { padding: 1.25rem 1.25rem; }
-  .banner-slide-text h3 { font-size: 1rem; }
-  .banner-slide-text p { font-size: .78rem; }
-  .banner-prev, .banner-next { width: 32px; height: 32px; font-size: 1.1rem; }
+
+/* ══════════════════════════════════════
+   LANDING PAGE MOBILE — prevent overflow
+══════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Base: never overflow horizontally */
+  html, body { overflow-x: hidden; max-width: 100vw; }
+  * { max-width: 100%; }
+
+  /* Nav */
+  .nav-inner { padding: .75rem 1.25rem; gap: 1rem; }
+  .logo img { height: 26px; }
+
+  /* Hero: full-width, single column */
+  .hero {
+    flex-direction: column;
+    padding: 5.5rem 1.25rem 3rem;
+    gap: 2rem;
+    text-align: center;
+    min-height: unset;
+  }
+  .hero-visual { display: none; }
+  .hero-content p { margin: 0 auto 1.5rem; max-width: 100%; }
+  .hero-actions { justify-content: center; flex-wrap: wrap; gap: .75rem; }
+  .hero-actions .btn { flex: 1 1 140px; justify-content: center; font-size: .9rem; padding: .7rem 1rem; }
+  .hero-stats { justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+  /* Sections */
+  .container { padding: 0 1.25rem; }
+  section { overflow-x: hidden; }
+
+  /* Section spacing */
+  .categories, .how, .features, .faq-section, .download,
+  .contact-section, .testimonials-section { padding: 3.5rem 0; }
+
+  /* Categories grid: 3 columns on mobile */
+  .cat-grid { grid-template-columns: repeat(3, 1fr); gap: .75rem; }
+  .cat-card { padding: 1.25rem .5rem; }
+  .cat-icon { font-size: 1.5rem; margin-bottom: .5rem; }
+  .cat-card span { font-size: .8rem; }
+
+  /* Steps: single column, no arrows */
+  .steps { flex-direction: column; align-items: center; gap: 1.25rem; }
+  .step { min-width: unset; max-width: 100%; width: 100%; }
+  .step-arrow { display: none; }
+
+  /* Features: single column */
+  .features-grid { grid-template-columns: 1fr; gap: 1rem; }
+
+  /* Download card */
+  .download-card {
+    flex-direction: column;
+    padding: 2rem 1.25rem;
+    text-align: center;
+    gap: 2rem;
+  }
+  .store-buttons { justify-content: center; }
+  .download-visual { display: none; }
+
+  /* Contact */
+  .contact-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .cf-row { grid-template-columns: 1fr; }
+  .contact-form { padding: 1.25rem; }
+
+  /* Footer */
+  .footer-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .footer { padding: 3rem 0 2rem; }
+
+  /* Announcement popup */
+  #announcement-bar {
+    left: .75rem !important;
+    right: .75rem !important;
+    bottom: 1rem !important;
+    max-width: calc(100vw - 1.5rem) !important;
+  }
+
+  /* Nav open dropdown */
+  .nav-links.open {
+    top: 60px;
+    padding: 1rem 1.25rem;
+    gap: .75rem;
+    z-index: 200;
+  }
+
+  /* Section headings */
+  section h2 { font-size: 1.6rem; }
+  .section-sub { margin-bottom: 1.75rem; }
 }
 
