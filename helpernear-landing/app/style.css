@@ -2418,11 +2418,9 @@ select option:checked, select option:hover {
   .nav-search-wrap { display: none !important; }
   /* Compact logo */
   .nav-logo img { height: 22px; }
-  /* Hide language toggle to save space — accessible from profile */
+  /* Hide lang toggle + loc button from topnav — they live in mob-header */
   .lang-toggle { display: none; }
-  /* Compact location button: icon only */
-  .loc-btn { padding: .35rem .6rem; border-radius: 20px; font-size: .78rem; gap: .3rem; }
-  .loc-btn span { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .loc-btn { display: none; }
 
   /* ── 4. Mobile greeting + search header (shown instead of hero) ── */
   .mob-header {

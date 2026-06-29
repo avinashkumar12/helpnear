@@ -406,7 +406,9 @@ section h2 {
 }
 @media (max-width: 600px) {
   .nav-links { display: none; }
-  .hamburger { display: block; }
+  .btn-nav { display: none; }          /* Hide "Open App" on mobile — hamburger only */
+  .hamburger { display: block; margin-left: auto; }
+  .nav-inner { gap: .75rem; }
   .hero-visual { display: none; }
   .footer-grid { grid-template-columns: 1fr; }
   .download-card { padding: 2rem 1.5rem; }
