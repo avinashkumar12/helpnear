@@ -826,6 +826,7 @@ input, select, textarea {
   transition: border-color .2s, background .2s;
   appearance: none;
   -webkit-appearance: none;
+  color-scheme: dark;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23FF6B35' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right .65rem center;
@@ -889,6 +890,7 @@ input, select, textarea {
   font-weight: 600;
   appearance: none;
   -webkit-appearance: none;
+  color-scheme: dark;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23FF6B35' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right .55rem center;
@@ -897,18 +899,43 @@ input, select, textarea {
 .adv-select:focus { border-color: var(--primary); outline: none; }
 .adv-select:hover { border-color: var(--primary); background-color: var(--primary-light); }
 
-/* Style native select option list */
+/* Style native select — force dark popup in Chromium */
+select {
+  color-scheme: dark;
+}
 select option {
-  background: #1e1e1e;
-  color: var(--text);
+  background: #1a1a1a;
+  color: #f0f0f0;
   font-family: var(--font);
   font-size: .9rem;
   padding: .5rem;
 }
-select option:checked, select option:hover {
+select option:checked {
   background: var(--primary);
   color: #fff;
 }
+
+/* Form-group selects (register, worker dashboard) */
+.form-group select {
+  width: 100%;
+  padding: .65rem 2.25rem .65rem 1rem;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: .9rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  color-scheme: dark;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23FF6B35' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .85rem center;
+  transition: border-color .2s;
+}
+.form-group select:focus { border-color: var(--primary); }
 
 .results-wrap { flex: 1; }
 
