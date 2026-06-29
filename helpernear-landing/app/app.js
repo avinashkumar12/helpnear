@@ -344,11 +344,12 @@ async function updateProfile() {
 
 async function updateHero() {
   const user = currentUser();
+  const h = new Date().getHours();
+  const timeGreet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   const greet = document.getElementById('hero-greeting');
-  if (greet && user?.name) {
-    const h = new Date().getHours();
-    greet.textContent = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + ', ' + user.name.split(' ')[0];
-  }
+  if (greet && user?.name) greet.textContent = timeGreet + ', ' + user.name.split(' ')[0];
+  const mobGreet = document.getElementById('mob-greeting');
+  if (mobGreet) mobGreet.textContent = user?.name ? timeGreet + ', ' + user.name.split(' ')[0] + ' 👋' : timeGreet + ' 👋';
   try {
     const res = await fetch(API + '/public/stats');
     if (res && res.ok) {
@@ -439,6 +440,8 @@ function setLocationDisplay(name) {
   document.getElementById('loc-text').textContent = name;
   const icon = document.getElementById('loc-icon');
   if (icon) { icon.innerHTML = '<i data-lucide="map-pin"></i>'; if (typeof lucide !== 'undefined') lucide.createIcons(); }
+  const mobLoc = document.getElementById('mob-loc-label');
+  if (mobLoc) mobLoc.textContent = name;
 }
 
 function useGpsLocation() {

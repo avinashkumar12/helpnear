@@ -133,6 +133,18 @@
     </div>
   </nav>
 
+  <!-- Mobile-only: greeting + search bar (replaces hero on small screens) -->
+  <div class="mob-header" id="mob-header">
+    <div class="mob-greeting-row">
+      <span class="mob-greeting-text" id="mob-greeting">Good morning 👋</span>
+      <button class="mob-loc-btn" onclick="openLocationModal()"><i data-lucide="map-pin"></i><span id="mob-loc-label">Set location</span></button>
+    </div>
+    <div class="mob-search-row">
+      <span class="mob-search-icon"><i data-lucide="search"></i></span>
+      <input id="mob-search-input" type="text" placeholder="Search workers, services…" oninput="document.getElementById('search-input').value=this.value;renderWorkers()"/>
+    </div>
+  </div>
+
   <div class="home-hero">
     <div class="home-hero-inner">
       <div class="hero-text">

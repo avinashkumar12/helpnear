@@ -1,4 +1,4 @@
-const CACHE = 'helpernear-v4';
+const CACHE = 'helpernear-v5';
 const STATIC = [
   '/app/',
   '/app/index.html',

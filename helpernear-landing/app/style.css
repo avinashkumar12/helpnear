@@ -2372,26 +2372,165 @@ select option:checked, select option:hover {
 .bottom-nav {
   display: none;
 }
+/* ══════════════════════════════════════════════════════════
+   MOBILE APP MODE  (≤ 768 px)
+   Goal: feel like an installed native app, not a web page.
+══════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* Push page content above bottom nav */
-  #page-home .home-body { padding-bottom: 80px; }
 
+  /* ── 1. Body: no extra safe-area padding (pages handle it) ── */
+  body {
+    padding: 0;
+    overflow: hidden;
+    height: 100dvh;
+  }
+
+  /* ── 2. Each page fills the screen and scrolls internally ── */
+  .page.active {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── 3. Compact top navigation bar ── */
+  .topnav {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    padding-top: env(safe-area-inset-top);
+    background: rgba(15,15,15,.97);
+  }
+  .topnav-inner {
+    height: 54px;
+    padding: 0 .875rem;
+    gap: .5rem;
+    max-width: unset;
+  }
+  /* Hide search bar — it lives below the top bar on mobile */
+  .nav-search-wrap { display: none !important; }
+  /* Compact logo */
+  .nav-logo img { height: 22px; }
+  /* Hide language toggle to save space — accessible from profile */
+  .lang-toggle { display: none; }
+  /* Compact location button: icon only */
+  .loc-btn { padding: .35rem .6rem; border-radius: 20px; font-size: .78rem; gap: .3rem; }
+  .loc-btn span { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── 4. Mobile greeting + search header (shown instead of hero) ── */
+  .mob-header {
+    display: block;
+    background: var(--bg);
+    padding: .75rem 1rem .625rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: calc(54px + env(safe-area-inset-top));
+    z-index: 150;
+  }
+  .mob-greeting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .5rem;
+  }
+  .mob-greeting-text {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .mob-loc-btn {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: rgba(255,107,53,.12);
+    border: 1px solid rgba(255,107,53,.25);
+    border-radius: 20px;
+    padding: .28rem .7rem;
+    cursor: pointer;
+    white-space: nowrap;
+    max-width: 140px;
+    overflow: hidden;
+  }
+  .mob-loc-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mob-loc-btn [data-lucide] { width: 13px; height: 13px; flex-shrink: 0; }
+  .mob-search-row {
+    position: relative;
+  }
+  .mob-search-icon {
+    position: absolute;
+    left: .85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  .mob-search-icon [data-lucide] { width: 16px; height: 16px; }
+  .mob-search-row input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .6rem 1rem .6rem 2.5rem;
+    font-size: 15px !important;
+    color: var(--text);
+    font-family: var(--font);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .mob-search-row input:focus { border-color: var(--primary); }
+
+  /* ── 5. Hide the desktop hero on mobile ── */
+  .home-hero { display: none; }
+
+  /* ── 6. Home body: start right after sticky header ── */
+  .home-body {
+    max-width: unset;
+    padding: 0 0 calc(74px + env(safe-area-inset-bottom));
+    margin: 0;
+  }
+  .filter-bar { padding: .5rem .875rem; border-bottom: 1px solid var(--border); }
+  .adv-filter-bar { padding: .5rem .875rem; }
+  #app-banners { margin: .75rem .875rem .25rem; }
+
+  /* ── 7. Worker cards: single column, edge-to-edge feel ── */
+  .workers-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .worker-card {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .results-header { padding: .75rem .875rem .5rem; }
+  #workers-grid { padding: 0; }
+
+  /* ── 8. Bottom navigation bar ── */
   .bottom-nav {
     display: flex;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(60px + env(safe-area-inset-bottom));
+    height: calc(58px + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
-    background: #1a1a1a;
-    border-top: 1px solid rgba(255,255,255,.08);
+    background: rgba(18,18,18,.98);
+    border-top: 1px solid rgba(255,255,255,.07);
     z-index: 600;
     align-items: stretch;
     justify-content: space-around;
-    box-shadow: 0 -4px 20px rgba(0,0,0,.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
-
   .bottom-nav-item {
     display: flex;
     flex-direction: column;
@@ -2406,41 +2545,96 @@ select option:checked, select option:hover {
     border: none;
     background: none;
     font-family: var(--font);
-    letter-spacing: .3px;
+    letter-spacing: .2px;
     transition: color .15s;
-    padding: 0;
-    min-height: unset;
+    padding: 8px 0 0;
     text-transform: uppercase;
   }
+  .bottom-nav-item [data-lucide] { width: 22px; height: 22px; stroke-width: 1.8; transition: stroke-width .15s; }
+  .bottom-nav-item.active { color: var(--primary); }
+  .bottom-nav-item.active [data-lucide] { stroke-width: 2.5; }
 
-  .bottom-nav-item [data-lucide] {
-    width: 22px;
-    height: 22px;
-    stroke-width: 2;
+  /* ── 9. FAB above bottom nav ── */
+  .fab-register { bottom: calc(68px + env(safe-area-inset-bottom)); }
+
+  /* ── 10. Inner pages: native app-bar style ── */
+  /* Worker profile page */
+  .wp-back-btn {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .88rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(0,0,0,.35);
+    border: none;
+    cursor: pointer;
+    padding: .5rem .875rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,.08);
   }
+  .wp-body-wrap { padding: 0 0 calc(20px + env(safe-area-inset-bottom)); }
+  .info-card { border-radius: 0; border-left: none; border-right: none; margin: 0; border-bottom: 1px solid var(--border); }
 
-  .bottom-nav-item.active {
+  /* Register / Profile / inner pages: sticky back-btn as app bar */
+  .back-btn {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    width: 100%;
+    padding: 1rem 1rem;
+    padding-top: calc(.75rem + env(safe-area-inset-top));
+    background: rgba(15,15,15,.97);
+    border-bottom: 1px solid var(--border);
+    font-size: .9rem;
+    font-weight: 600;
     color: var(--primary);
+    cursor: pointer;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-radius: 0;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    text-align: left;
   }
+  .profile-wrap { padding: 0 0 calc(20px + env(safe-area-inset-bottom)); }
+  .profile-wrap .info-card { margin: 0; border-radius: 0; border-left: none; border-right: none; border-bottom: 1px solid var(--border); }
+  .my-profile-header { padding: 1.5rem 1rem; }
+  .register-header { padding: 1.5rem 1rem .5rem; }
 
-  .bottom-nav-item.active [data-lucide] {
-    stroke-width: 2.5;
+  /* Worker dashboard back btn */
+  .wd-back-btn {
+    position: absolute;
+    top: env(safe-area-inset-top, 12px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,.8);
+    padding: .75rem 1rem;
+    text-align: left;
+    font-size: .85rem;
   }
+  .wd-hero { padding-top: calc(44px + env(safe-area-inset-top)); }
+  .wd-grid { padding: 0 0 calc(20px + env(safe-area-inset-bottom)); }
 
-  /* Hide desktop topnav search on mobile, keep logo + avatar */
-  .topnav-inner { gap: .5rem; }
-  #search-input-wrap { display: none; }
-
-  /* Fab above bottom nav */
-  .fab-register {
-    bottom: calc(70px + env(safe-area-inset-bottom));
-  }
-
-  /* Full-width cards on mobile */
-  .worker-card { border-radius: 12px; }
-
-  /* Login page mobile */
+  /* ── 11. Login page ── */
   .login-bg { padding: 0; }
-  .login-center { padding: 1.5rem 1rem 2rem; }
+  .login-center { padding: 1.5rem 1rem calc(2rem + env(safe-area-inset-bottom)); }
   .login-card { border-radius: 20px; }
+
+  /* ── 12. Misc ── */
+  .hero-stats { display: none; }
 }
