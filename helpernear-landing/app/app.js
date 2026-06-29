@@ -107,7 +107,7 @@ function showPage(name) {
   // Scroll page to top (fixed pages don't respond to window.scrollTo)
   if (target) target.scrollTop = 0;
 
-  if (name === 'home')             { updateFab(); updateHero(); }
+  if (name === 'home')             { updateFab(); updateHero(); searchWorkers(); }
   if (name === 'profile')          { loadMyProfile(); }
   if (name === 'register')         { loadRegCategories(); }
   if (name === 'worker-dashboard') { loadWorkerDashboard(); }
@@ -583,8 +583,6 @@ function getRegLocation() {
 let _searchAbort = null;
 
 async function searchWorkers() {
-  if (currentLat === null || currentLng === null) return;
-
   // Cancel any in-flight request
   if (_searchAbort) { _searchAbort.abort(); }
   _searchAbort = new AbortController();
@@ -593,9 +591,16 @@ async function searchWorkers() {
   if (grid) grid.style.opacity = '0.45';
   showLoader();
 
-  const radius = document.getElementById('radius-sel').value;
-  let url = '/workers/nearby?lat=' + currentLat + '&lng=' + currentLng + '&radius=' + radius;
-  if (selectedCategoryId) url += '&categoryId=' + selectedCategoryId;
+  let url;
+  if (currentLat !== null && currentLng !== null) {
+    const radius = document.getElementById('radius-sel').value;
+    url = '/workers/nearby?lat=' + currentLat + '&lng=' + currentLng + '&radius=' + radius;
+    if (selectedCategoryId) url += '&categoryId=' + selectedCategoryId;
+  } else {
+    // No location set — show all verified workers as a browseable list
+    url = '/public/workers';
+    if (selectedCategoryId) url += '?categoryId=' + selectedCategoryId;
+  }
 
   try {
     const res = await apiFetch(url, { signal: _searchAbort.signal });
@@ -604,7 +609,7 @@ async function searchWorkers() {
     allWorkers = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : (data.workers || []));
     renderWorkers();
   } catch (e) {
-    if (e?.name === 'AbortError') return; // newer request superseded this one
+    if (e?.name === 'AbortError') return;
   } finally {
     if (grid) grid.style.opacity = '1';
     hideLoader();
@@ -752,9 +757,10 @@ function renderWorkers() {
 
   const grid = document.getElementById('workers-grid');
   document.getElementById('results-count').textContent = filtered.length + ' ' + t('home.found');
-  document.getElementById('results-title').textContent = selectedCategoryId
-    ? (categoriesCache.find(c => c.id === selectedCategoryId)?.name || 'Workers') + ' Nearby'
-    : t('home.nearby');
+  const catName = selectedCategoryId ? (categoriesCache.find(c => c.id === selectedCategoryId)?.name || 'Workers') : null;
+  document.getElementById('results-title').textContent = catName
+    ? catName + (currentLat ? ' Nearby' : ' Workers')
+    : (currentLat ? t('home.nearby') : 'All Workers');
 
   if (!filtered.length) {
     grid.innerHTML = `<div class="empty-state"><div class="empty-icon"><i data-lucide="search-x"></i></div><h3>${t('home.no_workers')}</h3><p>${t('home.no_workers_sub')}</p></div>`;

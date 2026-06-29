@@ -147,6 +147,30 @@ export class PublicController {
     };
   }
 
+  @Get('workers')
+  async getAllWorkers(@Query('categoryId') categoryId?: string) {
+    const workers = await this.prisma.workerProfile.findMany({
+      where: {
+        isVerified: true,
+        status: { not: 'OFFLINE' },
+        ...(categoryId ? { categories: { some: { categoryId } } } : {}),
+      },
+      include: {
+        user: { select: { name: true, phone: true } },
+        categories: { include: { category: { select: { id: true, name: true, icon: true } } } },
+        reviews: { select: { rating: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    const data = workers.map(w => {
+      const ratings = w.reviews.map(r => r.rating);
+      const averageRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+      return { ...w, distance: null, averageRating, reviewCount: ratings.length };
+    });
+    return { message: 'Workers retrieved', data };
+  }
+
   @Get('workers/:id')
   async getWorkerProfile(@Param('id') id: string) {
     const profile = await this.prisma.workerProfile.findUnique({
