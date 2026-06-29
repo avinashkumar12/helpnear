@@ -1139,10 +1139,15 @@ async function loadWorkerDashboard() {
   // Status buttons
   document.querySelectorAll('.status-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.status === w.status));
 
-  // Location
+  // Location — show saved coords/address and silently refresh in background
   const locText = document.getElementById('wd-loc-text');
-  if (w.latitude && w.longitude) locText.textContent = Number(w.latitude).toFixed(4) + ', ' + Number(w.longitude).toFixed(4);
-  else locText.textContent = 'Location not set — customers cannot find you';
+  if (w.latitude && w.longitude) {
+    locText.textContent = Number(w.latitude).toFixed(4) + ', ' + Number(w.longitude).toFixed(4);
+    reverseGeocode(Number(w.latitude), Number(w.longitude)).then(addr => { if (addr && locText) locText.textContent = addr; });
+  } else {
+    locText.textContent = 'Location not set — customers cannot find you';
+  }
+  updateWorkerLocation(true); // silently push current GPS on dashboard open
 
   // Edit form
   document.getElementById('wd-bio').value = w.bio || '';
@@ -1256,20 +1261,37 @@ async function setWorkerStatus(status) {
   } else { showToast(data.message || 'Failed to update status.', 'error'); }
 }
 
-async function updateWorkerLocation() {
-  if (!navigator.geolocation) { showToast('Geolocation not supported.', 'error'); return; }
-  showLoader();
+async function reverseGeocode(lat, lng) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+    const j = await r.json();
+    const a = j.address || {};
+    return [a.suburb || a.neighbourhood || a.village, a.city || a.town || a.county, a.state].filter(Boolean).join(', ') || j.display_name?.split(',').slice(0,2).join(',') || null;
+  } catch { return null; }
+}
+
+async function updateWorkerLocation(silent = false) {
+  if (!navigator.geolocation) { if (!silent) showToast('Geolocation not supported.', 'error'); return; }
+  const btn = document.querySelector('[onclick="updateWorkerLocation()"]');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" style="animation:spin 1s linear infinite"></i> Locating…'; if (window.lucide) lucide.createIcons(); }
   navigator.geolocation.getCurrentPosition(async pos => {
     const latitude = pos.coords.latitude, longitude = pos.coords.longitude;
     const res = await apiFetch('/workers/location', { method: 'PATCH', body: JSON.stringify({ latitude, longitude }) });
-    hideLoader();
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="map-pin"></i> Update My Location'; if (window.lucide) lucide.createIcons(); }
     if (!res) return;
     const data = await res.json();
     if (res.ok) {
-      document.getElementById('wd-loc-text').textContent = latitude.toFixed(4) + ', ' + longitude.toFixed(4);
-      showToast('Location updated!', 'success');
-    } else { showToast(data.message || 'Failed.', 'error'); }
-  }, () => { hideLoader(); showToast('Could not get location.', 'error'); }, { timeout: 10000 });
+      const label = document.getElementById('wd-loc-text');
+      if (label) {
+        const address = await reverseGeocode(latitude, longitude);
+        label.textContent = address || (latitude.toFixed(4) + ', ' + longitude.toFixed(4));
+      }
+      if (!silent) showToast('Location updated!', 'success');
+    } else if (!silent) { showToast(data.message || 'Failed.', 'error'); }
+  }, () => {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="map-pin"></i> Update My Location'; if (window.lucide) lucide.createIcons(); }
+    if (!silent) showToast('Could not get location. Please allow location access.', 'error');
+  }, { timeout: 10000 });
 }
 
 async function saveWorkerProfile() {
