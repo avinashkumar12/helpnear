@@ -14,6 +14,7 @@ import { GeoModule } from './modules/geo/geo.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { SeoModule } from './modules/seo/seo.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     ReviewsModule,
     AdminModule,
     SettingsModule,
+    SeoModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

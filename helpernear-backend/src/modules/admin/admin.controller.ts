@@ -10,13 +10,16 @@ import {
   Put,
   Query,
   Request,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { basename, extname, join } from 'path';
+import type { Response } from 'express';
 import * as fs from 'fs';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
@@ -32,15 +35,18 @@ import { AdminLoginDto } from './dto/admin-login.dto';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  // Max 5 login attempts per minute per IP (brute-force protection)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post('login')
   async login(@Body() dto: AdminLoginDto) {
     const data = await this.adminService.adminLogin(dto.email, dto.password);
     return { message: 'Login successful', data };
   }
 
+  @Throttle({ default: { ttl: 60000, limit: 3 } })
   @Post('setup')
-  async setup(@Body() body: { name: string; email: string; password: string }) {
-    const data = await this.adminService.adminSetup(body.name, body.email, body.password);
+  async setup(@Body() body: { name: string; email: string; password: string; setupSecret?: string }) {
+    const data = await this.adminService.adminSetup(body.name, body.email, body.password, body.setupSecret);
     return { message: data.message, data };
   }
 
@@ -77,6 +83,28 @@ export class AdminController {
   async verifyWorker(@Body() dto: WorkerActionDto, @Request() req: any) {
     const data = await this.adminService.verifyWorker(dto, req.user?.sub, req.user?.name);
     return { message: 'Worker verified successfully', data };
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Patch('reject-worker')
+  async rejectWorker(@Body() dto: WorkerActionDto, @Request() req: any) {
+    const data = await this.adminService.rejectWorker(dto, req.user?.sub, req.user?.name);
+    return { message: 'Verification rejected', data };
+  }
+
+  // ID documents are private: streamed to admins only (never served statically)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('verification-doc/:workerId')
+  async verificationDoc(@Param('workerId') workerId: string, @Res() res: Response) {
+    const v = await this.adminService.getVerificationDoc(workerId);
+    const file = join(process.cwd(), 'private-uploads', 'verification', basename(v.idDocPath));
+    if (!fs.existsSync(file)) throw new BadRequestException('Document file is missing');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.sendFile(file);
   }
 
   @ApiBearerAuth()

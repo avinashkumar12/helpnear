@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { GeoController } from './geo.controller';
 import { GeoService } from './geo.service';
 
+// The public /workers/nearby route lives in WorkersController.
 @Module({
-  controllers: [GeoController],
   providers: [GeoService],
+  exports: [GeoService],
 })
 export class GeoModule {}

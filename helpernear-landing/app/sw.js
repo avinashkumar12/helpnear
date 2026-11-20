@@ -1,9 +1,11 @@
-const CACHE = 'helpernear-v6';
+const CACHE = 'helpernear-v8';
 const STATIC = [
   '/app/',
   '/app/index.html',
   '/app/style.css',
   '/app/app.js',
+  '/app/worker-extras.js',
+  '/app/i18n-extra.js',
   '/app/manifest.json',
 ];
 

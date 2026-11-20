@@ -1,4 +1,10 @@
 {
   "trailingSlash": true,
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/services", "destination": "https://helpnear-production.up.railway.app/services" },
+    { "source": "/services/:path*", "destination": "https://helpnear-production.up.railway.app/services/:path*" },
+    { "source": "/sitemap.xml", "destination": "https://helpnear-production.up.railway.app/sitemap.xml" },
+    { "source": "/robots.txt", "destination": "https://helpnear-production.up.railway.app/robots.txt" }
+  ]
 }

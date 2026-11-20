@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -36,9 +37,21 @@ export class AdminService {
     return { accessToken, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
   }
 
-  async adminSetup(name: string, email: string, password: string) {
-    const existing = await this.prisma.user.findFirst({ where: { role: 'ADMIN' } });
-    if (existing && existing.email && existing.passwordHash) {
+  async adminSetup(name: string, email: string, password: string, setupSecret?: string) {
+    // One-time bootstrap endpoint. Locked down so it can't be used to seize the admin account.
+    const requiredSecret = process.env.ADMIN_SETUP_SECRET;
+    if (requiredSecret) {
+      if (setupSecret !== requiredSecret) throw new ForbiddenException('Invalid setup secret.');
+    } else if (this.config.get<string>('nodeEnv') === 'production') {
+      throw new ForbiddenException('Admin setup is disabled. Set ADMIN_SETUP_SECRET to enable it.');
+    }
+    if (!name || !email || !password || password.length < 8) {
+      throw new BadRequestException('Name, email and a password of at least 8 characters are required.');
+    }
+    const configured = await this.prisma.user.findFirst({
+      where: { role: 'ADMIN', passwordHash: { not: null } },
+    });
+    if (configured) {
       throw new ConflictException('Admin account already configured.');
     }
     const passwordHash = await bcrypt.hash(password, 10);
@@ -79,6 +92,7 @@ export class AdminService {
         include: {
           user: { select: { id: true, name: true, phone: true, role: true, isActive: true } },
           categories: { include: { category: true } },
+          verification: { select: { status: true, idType: true, submittedAt: true, note: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -93,6 +107,10 @@ export class AdminService {
       include: { user: { select: { name: true } } },
     });
     if (!worker) throw new NotFoundException('Worker not found');
+    await this.prisma.workerVerification.updateMany({
+      where: { workerId: dto.workerId },
+      data: { status: 'APPROVED', note: null, reviewedAt: new Date() },
+    });
     const result = await this.prisma.workerProfile.update({
       where: { id: dto.workerId },
       data: { isVerified: true },
@@ -103,6 +121,29 @@ export class AdminService {
     if (workerEmail) this.email.sendWorkerVerified(workerEmail, result.user.name || 'Worker').catch(() => {});
     this.notifications.sendToUser(result.user.id, '🎉 Profile Verified!', 'Congratulations! Your HelperNear profile has been verified. You can now receive job requests.', '/app').catch(() => {});
     return result;
+  }
+
+  async rejectWorker(dto: WorkerActionDto, adminId?: string, adminName?: string) {
+    const worker = await this.prisma.workerProfile.findUnique({
+      where: { id: dto.workerId },
+      include: { user: { select: { id: true, name: true } } },
+    });
+    if (!worker) throw new NotFoundException('Worker not found');
+    const reason = (dto.reason || '').trim() || 'Documents were unclear or invalid';
+    await this.prisma.workerVerification.updateMany({
+      where: { workerId: dto.workerId },
+      data: { status: 'REJECTED', note: reason, reviewedAt: new Date() },
+    });
+    await this.prisma.workerProfile.update({ where: { id: dto.workerId }, data: { isVerified: false } });
+    if (adminId) await this.logActivity(adminId, adminName || 'Admin', 'REJECT_WORKER', `worker:${dto.workerId}`, reason);
+    this.notifications.sendToUser(worker.user.id, 'Verification needs attention', reason, '/app').catch(() => {});
+    return { workerId: dto.workerId, status: 'REJECTED', note: reason };
+  }
+
+  async getVerificationDoc(workerId: string) {
+    const v = await this.prisma.workerVerification.findUnique({ where: { workerId } });
+    if (!v) throw new NotFoundException('No verification document submitted');
+    return v;
   }
 
   async blockWorker(dto: WorkerActionDto) {

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -15,6 +16,21 @@ export class ReviewsService {
       where: { id: dto.workerId },
     });
     if (!worker) throw new NotFoundException('Worker not found');
+
+    if (worker.userId === userId) {
+      throw new BadRequestException('You cannot review yourself');
+    }
+
+    // Only customers who actually contacted this worker may review them
+    const contacted = await this.prisma.contactLog.findFirst({
+      where: { workerId: dto.workerId, userId },
+      select: { id: true },
+    });
+    if (!contacted) {
+      throw new ForbiddenException(
+        'Please contact this worker before leaving a review',
+      );
+    }
 
     const existing = await this.prisma.review.findFirst({
       where: { workerId: dto.workerId, userId },

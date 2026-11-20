@@ -29,7 +29,10 @@ async function bootstrap() {
   );
   app.enableCors();
   app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
-  app.setGlobalPrefix('api/v1');
+  // SEO pages live at the site root, not under /api/v1
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['sitemap.xml', 'robots.txt', 'services', 'services/:category', 'services/:category/:city'],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

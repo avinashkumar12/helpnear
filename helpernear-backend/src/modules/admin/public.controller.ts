@@ -2,6 +2,7 @@ import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@n
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { PrismaService } from '../../prisma/prisma.service';
+import { parseSort, sortWorkers, staleCutoff } from '../workers/ranking';
 import { EmailService } from '../email/email.service';
 
 function applyLang<T extends { translations?: any }>(item: T, lang: string): Omit<T, 'translations'> {
@@ -148,11 +149,19 @@ export class PublicController {
   }
 
   @Get('workers')
-  async getAllWorkers(@Query('categoryId') categoryId?: string) {
+  async getAllWorkers(
+    @Query('categoryId') categoryId?: string,
+    @Query('sort') sort?: string,
+    @Query('minRating') minRating?: string,
+    @Query('availableNow') availableNow?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
     const workers = await this.prisma.workerProfile.findMany({
       where: {
         isVerified: true,
-        status: { not: 'OFFLINE' },
+        status: availableNow === 'true' ? 'AVAILABLE' : { not: 'OFFLINE' },
+        lastActiveAt: { gte: staleCutoff() },
         ...(categoryId ? { categories: { some: { categoryId } } } : {}),
       },
       include: {
@@ -161,13 +170,20 @@ export class PublicController {
         reviews: { select: { rating: true } },
       },
       orderBy: { createdAt: 'desc' },
-      take: 50,
+      take: 500,
     });
-    const data = workers.map(w => {
-      const ratings = w.reviews.map(r => r.rating);
-      const averageRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
-      return { ...w, distance: null, averageRating, reviewCount: ratings.length };
-    });
+    const min = parseFloat(minRating ?? '') || 0;
+    const mapped = workers
+      .map(w => {
+        const ratings = w.reviews.map(r => r.rating);
+        const averageRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+        return { ...w, distance: null as number | null, averageRating, reviewCount: ratings.length };
+      })
+      .filter(w => w.averageRating >= min);
+    const sorted = sortWorkers(mapped, parseSort(sort), 0);
+    const size = Math.min(Math.max(parseInt(limit ?? '', 10) || 50, 1), 100);
+    const pg = Math.max(parseInt(page ?? '', 10) || 1, 1);
+    const data = sorted.slice((pg - 1) * size, pg * size);
     return { message: 'Workers retrieved', data };
   }
 

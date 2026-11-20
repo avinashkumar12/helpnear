@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, Max, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class UpdateLocationDto {
   @ApiProperty({ example: 28.6139 })
@@ -13,4 +13,10 @@ export class UpdateLocationDto {
   @Min(-180, { message: 'Longitude must be between -180 and 180' })
   @Max(180, { message: 'Longitude must be between -180 and 180' })
   longitude: number;
+
+  @ApiPropertyOptional({ example: 'Indore' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  city?: string;
 }

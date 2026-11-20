@@ -162,6 +162,9 @@
   </div>
 
   <div class="home-body">
+    <!-- Follow-up: "Did you hire X?" -->
+    <div id="followup-card" class="followup-card" style="display:none"></div>
+
     <div class="filter-bar">
       <div class="chips" id="cat-chips">
         <button class="chip active" data-cat="">All</button>
@@ -194,7 +197,8 @@
       </div>
 
       <div class="adv-filter-group">
-        <select id="filter-sort" onchange="renderWorkers()" class="adv-select">
+        <select id="filter-sort" onchange="searchWorkers()" class="adv-select">
+          <option value="relevance">Best match</option>
           <option value="distance" data-i18n-opt="filter.sort_distance">Nearest first</option>
           <option value="rating"   data-i18n-opt="filter.sort_rating">Top rated</option>
           <option value="reviews"  data-i18n-opt="filter.sort_reviews">Most reviewed</option>
@@ -312,12 +316,15 @@
       <i data-lucide="wifi-off"></i> This worker is currently unavailable. Check back later.
     </div>
 
+    <div id="wp-extras"></div>
+
     <div class="info-card">
       <h3>About</h3>
       <p id="wp-bio" class="bio-text">—</p>
     </div>
 
     <!-- Write a Review -->
+    <div class="already-reviewed review-gate-note" id="review-gate-note" style="display:none"><i data-lucide="phone-call"></i> Contact this worker (call or WhatsApp) to unlock reviews.</div>
     <div class="info-card" id="review-form-card">
       <h3>Write a Review</h3>
       <div class="star-picker" id="star-picker">
@@ -431,6 +438,9 @@
       <button id="wd-share-btn" class="btn btn-sm" onclick="shareWorkerProfile()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:.35rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem">
         <i data-lucide="share-2" style="width:14px;height:14px"></i> Share Profile
       </button>
+      <button class="btn btn-sm" onclick="showProfileQr()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:.35rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem">
+        <i data-lucide="qr-code" style="width:14px;height:14px"></i> QR Code
+      </button>
     </div>
 
     <!-- Stats strip inside hero -->
@@ -448,6 +458,9 @@
     <!-- LEFT column -->
     <div class="wd-col-left">
 
+      <div id="wd-strength-card"></div>
+      <div id="wd-verify-card"></div>
+
       <!-- Reach & Visibility -->
       <div class="info-card reach-stats-card">
         <div class="reach-stats-header">
@@ -464,6 +477,7 @@
           <div class="reach-stat reach-stat--call"><span id="reach-calls">—</span><small>Calls</small></div>
           <div class="reach-stat reach-stat--wa"><span id="reach-wa">—</span><small>WhatsApp</small></div>
         </div>
+        <div id="reach-lead"></div>
         <div id="reach-recent-list" class="reach-recent-list"></div>
       </div>
 
@@ -493,6 +507,14 @@
             <label>Price Range</label>
             <input id="wd-price" type="text" placeholder="e.g. ₹200–500/hr"/>
           </div>
+        </div>
+        <div class="form-group">
+          <label>Services &amp; prices <small style="font-weight:400;opacity:.7">(one per line: name | price)</small></label>
+          <textarea id="wd-services" rows="4" placeholder="Tap repair | ₹300&#10;Pipe fitting | ₹500"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Photos of your work</label>
+          <div id="wd-gallery"></div>
         </div>
         <div class="form-group">
           <label>Categories</label>
@@ -637,5 +659,7 @@
 <div id="global-toast" class="global-toast hidden"></div>
 
 <script src="/app/app.js"></script>
+<script src="/app/worker-extras.js"></script>
+<script src="/app/i18n-extra.js"></script>
 </body>
 </html>

@@ -1514,12 +1514,43 @@ renderVerificationTable = function(workers) {
       <td>
         <div class="table-actions">
           <button class="btn-sm btn-verify" onclick="verifyWorkerFromQueue('${w.id}')"><i data-lucide="check"></i> Verify</button>
+          ${w.verification ? `<button class="btn-sm btn-view" onclick="viewVerificationDoc('${w.id}')" title="${escHtml(w.verification.idType || '')} · ${escHtml(w.verification.status || '')}">View ID</button>` : '<span style="font-size:.72rem;color:var(--text-muted)">No ID</span>'}
+          <button class="btn-sm btn-block" onclick="rejectWorkerFromQueue('${w.id}')">Reject</button>
           <button class="btn-sm btn-view" onclick='openWorkerEditModal(${JSON.stringify(w)})'>Edit</button>
         </div>
       </td>
     </tr>`;
   }).join('');
 };
+
+// ID documents are private: fetch with the admin token and open as a blob
+async function viewVerificationDoc(workerId) {
+  showLoader();
+  try {
+    const res = await fetch(API + '/admin/verification-doc/' + encodeURIComponent(workerId), {
+      headers: { 'Authorization': 'Bearer ' + token() },
+    });
+    if (!res.ok) { showToast('Could not load the document.', 'error'); return; }
+    const blob = await res.blob();
+    window.open(URL.createObjectURL(blob), '_blank');
+  } catch (e) {
+    showToast('Could not load the document.', 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+async function rejectWorkerFromQueue(workerId) {
+  const reason = window.prompt('Reason for rejection (shown to the worker):', 'ID photo is unclear. Please upload a clearer image.');
+  if (reason === null) return;
+  showLoader();
+  const res = await apiFetch('/admin/reject-worker', { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ workerId, reason }) });
+  hideLoader();
+  if (!res) return;
+  const data = await res.json();
+  if (res.ok) { showToast('Verification rejected.', 'success'); loadVerification(); }
+  else showToast(data.message || 'Failed.', 'error');
+}
 
 async function bulkVerify() {
   const selected = [...document.querySelectorAll('.verify-row-cb:checked')].map(cb => cb.value);

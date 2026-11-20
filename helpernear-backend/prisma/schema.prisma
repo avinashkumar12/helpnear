@@ -19,6 +19,12 @@ enum WorkerStatus {
   OFFLINE
 }
 
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ComplaintStatus {
   PENDING
   REVIEWED
@@ -56,16 +62,38 @@ model WorkerProfile {
   latitude        Float?
   longitude       Float?
   photoUrl        String?
+  lastActiveAt    DateTime     @default(now())
+  city            String?
+  gallery         String[]     @default([])
+  services        Json         @default("[]")
+  profileViews    Int          @default(0)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   categories  WorkerCategory[]
   reviews     Review[]
   complaints  Complaint[]
   contactLogs ContactLog[]
+  verification WorkerVerification?
 
+  @@index([city])
   @@map("worker_profiles")
+}
+
+model WorkerVerification {
+  id          String             @id @default(uuid())
+  workerId    String             @unique
+  idType      String
+  idDocPath   String
+  status      VerificationStatus @default(PENDING)
+  note        String?
+  submittedAt DateTime           @default(now())
+  reviewedAt  DateTime?
+
+  worker WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@map("worker_verifications")
 }
 
 model Category {
@@ -285,8 +313,11 @@ model ContactLog {
   userId    String?
   user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   channel   String        // 'call' | 'whatsapp'
+  outcome   String?       // 'HIRED' | 'NOT_HIRED' (customer follow-up answer)
+  respondedAt DateTime?
   createdAt DateTime      @default(now())
 
+  @@index([userId])
   @@index([workerId])
   @@index([createdAt])
   @@map("contact_logs")

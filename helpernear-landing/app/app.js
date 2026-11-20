@@ -19,7 +19,7 @@ const API = 'https://helpnear-production.up.railway.app/api/v1';
 // ── State ──
 let currentLat = null, currentLng = null;
 let allWorkers = [], selectedCategoryId = '', categoriesCache = [];
-let regLat = null, regLng = null;
+let regLat = null, regLng = null, regCity = null;
 let currentWorkerId = null; // worker profile being viewed
 let selectedReviewRating = 0;
 let myWorkerProfile = null; // logged-in user's worker profile (null if not a worker)
@@ -186,6 +186,46 @@ async function verifyOtp() {
   } else { showLoginToast(data.message || 'Invalid OTP.', 'error'); }
 }
 
+// ══════════════════════════════
+// FOLLOW-UP: "Did you hire X?"
+// ══════════════════════════════
+async function loadFollowUps() {
+  const box = document.getElementById('followup-card');
+  if (!box || !token()) return;
+  try {
+    const res = await apiFetch('/workers/me/followups');
+    if (!res || !res.ok) return;
+    const list = (await res.json()).data || [];
+    if (!list.length) { box.style.display = 'none'; return; }
+    const f = list[0];
+    box.dataset.id = f.id;
+    box.dataset.worker = f.workerId;
+    box.innerHTML =
+      '<div class="fu-text"><strong>Did you hire ' + escHtml(f.workerName) + '?</strong>' +
+      '<span>You contacted them recently. Your answer helps others.</span></div>' +
+      '<div class="fu-actions">' +
+      '<button class="fu-yes" onclick="answerFollowUp(\'HIRED\')">Yes, hired</button>' +
+      '<button class="fu-no" onclick="answerFollowUp(\'NOT_HIRED\')">No</button></div>';
+    box.style.display = '';
+  } catch (e) { /* non-critical */ }
+}
+
+async function answerFollowUp(outcome) {
+  const box = document.getElementById('followup-card');
+  const id = box.dataset.id, workerId = box.dataset.worker;
+  box.style.display = 'none';
+  await apiFetch('/workers/contacts/' + id + '/outcome', {
+    method: 'POST',
+    body: JSON.stringify({ outcome }),
+  }).catch(() => {});
+  if (outcome === 'HIRED') {
+    showToast('Great! Please rate your experience.', 'success');
+    openWorkerProfile(workerId);
+  } else {
+    loadFollowUps();
+  }
+}
+
 async function afterLogin() {
   updateNavAvatar();
   await checkWorkerStatus(); // sets myWorkerProfile + updates nav dropdown
@@ -193,6 +233,7 @@ async function afterLogin() {
   loadCategories();
   silentGpsLocation();
   loadAppBanners();
+  loadFollowUps();
 }
 
 async function loadAppBanners() {
@@ -571,6 +612,7 @@ function getRegLocation() {
   navigator.geolocation.getCurrentPosition(
     pos => {
       regLat = pos.coords.latitude; regLng = pos.coords.longitude;
+      reverseGeocodeCity(regLat, regLng).then(c => { regCity = c; });
       document.getElementById('reg-loc-text').textContent = 'Location captured (' + regLat.toFixed(4) + ', ' + regLng.toFixed(4) + ')';
     },
     () => showToast('Could not get location.', 'error'), { timeout: 10000 }
@@ -581,6 +623,23 @@ function getRegLocation() {
 // SEARCH WORKERS
 // ══════════════════════════════
 let _searchAbort = null;
+
+// 'reviews' is sorted client-side; everything else is ranked by the API
+function serverSort() {
+  const v = document.getElementById('filter-sort')?.value || 'relevance';
+  return v === 'reviews' ? 'relevance' : v;
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return null;
+  const mins = Math.max(0, Math.round((Date.now() - new Date(dateStr).getTime()) / 60000));
+  if (mins < 5) return 'Active now';
+  if (mins < 60) return 'Active ' + mins + 'm ago';
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return 'Active ' + hrs + 'h ago';
+  const days = Math.round(hrs / 24);
+  return 'Active ' + days + 'd ago';
+}
 
 async function searchWorkers() {
   // Cancel any in-flight request
@@ -596,10 +655,11 @@ async function searchWorkers() {
     const radius = document.getElementById('radius-sel').value;
     url = '/workers/nearby?lat=' + currentLat + '&lng=' + currentLng + '&radius=' + radius;
     if (selectedCategoryId) url += '&categoryId=' + selectedCategoryId;
+    url += '&sort=' + serverSort();
   } else {
     // No location set — show all verified workers as a browseable list
-    url = '/public/workers';
-    if (selectedCategoryId) url += '?categoryId=' + selectedCategoryId;
+    url = '/public/workers?sort=' + serverSort();
+    if (selectedCategoryId) url += '&categoryId=' + selectedCategoryId;
   }
 
   try {
@@ -607,6 +667,7 @@ async function searchWorkers() {
     if (!res || !res.ok) return;
     const data = await res.json();
     allWorkers = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : (data.workers || []));
+    setSearchPagination(url, allWorkers.length);
     renderWorkers();
   } catch (e) {
     if (e?.name === 'AbortError') return;
@@ -734,7 +795,7 @@ function renderWorkers() {
   const query    = (document.getElementById('search-input')?.value || '').toLowerCase();
   const avOnly   = document.getElementById('filter-available')?.checked;
   const minRat   = parseFloat(document.getElementById('filter-rating')?.value || '0');
-  const sortBy   = document.getElementById('filter-sort')?.value || 'distance';
+  const sortBy   = document.getElementById('filter-sort')?.value || 'relevance';
 
   let filtered = allWorkers.filter(w => {
     if (avOnly && w.status !== 'AVAILABLE') return false;
@@ -753,7 +814,7 @@ function renderWorkers() {
   } else if (sortBy === 'reviews') {
     filtered = filtered.slice().sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
   }
-  // 'distance' keeps the API order (already sorted by proximity)
+  // 'relevance', 'distance' and 'rating' use the API order (ranked server-side)
 
   const grid = document.getElementById('workers-grid');
   document.getElementById('results-count').textContent = filtered.length + ' ' + t('home.found');
@@ -769,6 +830,7 @@ function renderWorkers() {
   }
   grid.innerHTML = '';
   filtered.forEach(w => grid.appendChild(buildWorkerCard(w)));
+  renderLoadMore();
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
@@ -800,6 +862,7 @@ function buildWorkerCard(w) {
       ${dist ? `<span class="card-dist"><i data-lucide="map-pin"></i> ${dist}</span>` : ''}
       ${avgRating ? `<span class="card-rating">★ ${avgRating}</span>${reviewCount ? `<span class="card-reviews">(${reviewCount})</span>` : ''}` : `<span class="card-rating no-rating">${t('worker.no_reviews')}</span>`}
       ${w.priceRange ? `<span class="card-price">${escHtml(w.priceRange)}</span>` : ''}
+      ${timeAgo(w.lastActiveAt) ? `<span class="card-active">${timeAgo(w.lastActiveAt)}</span>` : ''}
     </div>
     <div class="card-actions">
       <a href="tel:${phone}" class="card-call" onclick="event.stopPropagation();logContactAttempt('${w.id||w._id}','call')"><i data-lucide="phone"></i> ${t('worker.call')}</a>
@@ -873,12 +936,17 @@ async function openWorkerProfile(id) {
 
   // Show/hide review form (only for logged-in non-workers who haven't reviewed yet)
   const reviewCard = document.getElementById('review-form-card');
+  const gateNote = document.getElementById('review-gate-note');
+  if (gateNote) gateNote.style.display = 'none';
   const isOwnProfile = myWorkerProfile && (myWorkerProfile.id === currentWorkerId || myWorkerProfile._id === currentWorkerId);
   if (token() && !isOwnProfile) {
     if (w.hasReviewed) {
       reviewCard.style.display = '';
       reviewCard.innerHTML = '<div class="already-reviewed"><i data-lucide="check-circle"></i> You have already reviewed this worker.</div>';
       lucide.createIcons();
+    } else if (!w.hasContacted) {
+      reviewCard.style.display = 'none';
+      if (gateNote) { gateNote.style.display = ''; lucide.createIcons(); }
     } else {
       reviewCard.style.display = '';
       resetReviewForm();
@@ -888,6 +956,7 @@ async function openWorkerProfile(id) {
     resetReviewForm();
   }
 
+  renderPublicExtras(w);
   renderReviews(reviews);
   showPage('worker');
 }
@@ -1087,7 +1156,7 @@ async function submitWorkerRegistration() {
   showLoader();
   const res = await apiFetch('/workers/profile', {
     method: 'POST',
-    body: JSON.stringify({ bio, experienceYears: expVal ? parseInt(expVal) : 0, priceRange: priceRange||undefined, categoryIds: selectedCats, latitude: regLat, longitude: regLng })
+    body: JSON.stringify({ bio, experienceYears: expVal ? parseInt(expVal) : 0, priceRange: priceRange||undefined, categoryIds: selectedCats, latitude: regLat, longitude: regLng, city: regCity || undefined })
   });
   hideLoader();
   if (!res) return;
@@ -1162,6 +1231,9 @@ async function loadWorkerDashboard() {
 
   // Contact / Reach stats
   loadReachStats();
+
+  // Profile strength, verification, gallery, price list (worker-extras.js)
+  renderWorkerExtras(w);
 }
 
 async function uploadWorkerPhoto(input) {
@@ -1207,6 +1279,7 @@ async function loadReachStats() {
   const res = await apiFetch('/workers/me/contact-stats');
   if (!res || !res.ok) return;
   const { data: s } = await res.json();
+  renderLeadStats(s);
 
   document.getElementById('reach-total').textContent = s.total ?? '—';
   document.getElementById('reach-today').textContent = s.todayCount ?? 0;
@@ -1270,13 +1343,27 @@ async function reverseGeocode(lat, lng) {
   } catch { return null; }
 }
 
+// Resolves a city name for SEO pages (cached by ~1km grid to limit lookups)
+const _cityCache = {};
+async function reverseGeocodeCity(lat, lng) {
+  const key = lat.toFixed(2) + ',' + lng.toFixed(2);
+  if (_cityCache[key] !== undefined) return _cityCache[key];
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat.toFixed(2) + '&lon=' + lng.toFixed(2) + '&format=json&zoom=10');
+    const a = (await r.json()).address || {};
+    _cityCache[key] = a.city || a.town || a.village || a.state_district || a.county || null;
+  } catch { _cityCache[key] = null; }
+  return _cityCache[key];
+}
+
 async function updateWorkerLocation(silent = false) {
   if (!navigator.geolocation) { if (!silent) showToast('Geolocation not supported.', 'error'); return; }
   const btn = document.querySelector('[onclick="updateWorkerLocation()"]');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" style="animation:spin 1s linear infinite"></i> Locating…'; if (window.lucide) lucide.createIcons(); }
   navigator.geolocation.getCurrentPosition(async pos => {
     const latitude = pos.coords.latitude, longitude = pos.coords.longitude;
-    const res = await apiFetch('/workers/location', { method: 'PATCH', body: JSON.stringify({ latitude, longitude }) });
+    const city = await reverseGeocodeCity(latitude, longitude);
+    const res = await apiFetch('/workers/location', { method: 'PATCH', body: JSON.stringify({ latitude, longitude, ...(city ? { city } : {}) }) });
     if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="map-pin"></i> Update My Location'; if (window.lucide) lucide.createIcons(); }
     if (!res) return;
     const data = await res.json();
@@ -1302,7 +1389,7 @@ async function saveWorkerProfile() {
   if (!bio) { showToast('Bio is required.', 'error'); return; }
   if (!categoryIds.length) { showToast('Select at least one category.', 'error'); return; }
   showLoader();
-  const res = await apiFetch('/workers/profile', { method: 'PATCH', body: JSON.stringify({ bio, experienceYears, priceRange: priceRange||undefined, categoryIds }) });
+  const res = await apiFetch('/workers/profile', { method: 'PATCH', body: JSON.stringify({ bio, experienceYears, priceRange: priceRange||undefined, categoryIds, services: parseServices() }) });
   hideLoader();
   if (!res) return;
   const data = await res.json();
@@ -1511,6 +1598,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       showPage('home');
       loadCategories();
       silentGpsLocation();
+      loadFollowUps();
       initFcm();
     } else {
       store.remove('hn_token'); store.remove('hn_user');
@@ -1526,6 +1614,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── Share Worker Profile ──
 function shareWorkerProfile() {
+  // (QR code is available via showProfileQr() in worker-extras.js)
   if (!myWorkerProfile?.id) return;
   const url = `${location.origin}/worker.html?id=${myWorkerProfile.id}`;
   if (navigator.share) {
