@@ -741,12 +741,10 @@ function initMap() {
   // clear existing markers
   _map.eachLayer(layer => { if (layer instanceof L.Marker) _map.removeLayer(layer); });
 
-  // user location marker
+  // user location marker (blue pin, like Google Maps)
   if (currentLat && currentLng) {
-    L.circleMarker([currentLat, currentLng], {
-      radius: 8, fillColor: '#FF6B35', color: '#fff',
-      weight: 2, opacity: 1, fillOpacity: 1,
-    }).addTo(_map).bindPopup('<strong>Your Location</strong>');
+    L.marker([currentLat, currentLng], { icon: mapPinIcon('user', '#2F6FED'), zIndexOffset: 1000 })
+      .addTo(_map).bindPopup('<strong>Your Location</strong>');
   }
 
   // worker markers
@@ -765,14 +763,10 @@ function initMap() {
     const cats = (w.categories || []).map(c => c.category?.name || c.name || '').filter(Boolean).join(', ');
     const dist = w.distance ? `${Number(w.distance).toFixed(1)} km away` : '';
     const rating = w.averageRating ? `⭐ ${Number(w.averageRating).toFixed(1)}` : '';
-    const statusColor = w.status === 'AVAILABLE' ? '#22c55e' : w.status === 'BUSY' ? '#f59e0b' : '#6b7280';
-
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="width:36px;height:36px;border-radius:50%;background:${statusColor};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.7rem;">${getInitials(name)}</div>`,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
-    });
+    // pin colour = availability, pin icon = the worker's main skill
+    const pinColor = w.status === 'AVAILABLE' ? '#FF6B35' : w.status === 'BUSY' ? '#D49A12' : '#7a7f87';
+    const firstCat = (w.categories || []).map(c => c.category?.name || c.name || '').find(Boolean) || '';
+    const icon = mapPinIcon(skillIconName(firstCat), pinColor);
 
     L.marker([w.latitude, w.longitude], { icon })
       .addTo(_map)
@@ -786,7 +780,50 @@ function initMap() {
       `);
   });
 
+  if (typeof lucide !== 'undefined') lucide.createIcons();   // draw the pin icons
   setTimeout(() => _map.invalidateSize(), 100);
+}
+
+// Skill → Lucide icon. Categories are admin-defined, so match by keyword and
+// fall back to a briefcase for anything unknown.
+const SKILL_ICONS = [
+  [/plumb|pipe|tap/i, 'wrench'],
+  [/electr|wir/i, 'zap'],
+  [/maid|clean|house ?keep|sweep|dust/i, 'sparkles'],
+  [/carpent|wood|furniture/i, 'hammer'],
+  [/mechanic|garage|bike|repair shop/i, 'cog'],
+  [/\bac\b|air ?con|cooling|fridge|refriger/i, 'snowflake'],
+  [/paint|polish/i, 'paintbrush'],
+  [/garden|lawn|plant|mali/i, 'leaf'],
+  [/cook|chef|kitchen|tiffin|catering/i, 'chef-hat'],
+  [/driver|cab|taxi|car\b/i, 'car'],
+  [/mov|pack|truck|transport|delivery|load/i, 'truck'],
+  [/security|guard/i, 'shield'],
+  [/tutor|teach/i, 'graduation-cap'],
+  [/beauty|salon|barber|hair/i, 'scissors'],
+  [/care|nurse|nanny|baby|elder/i, 'heart-handshake'],
+  [/mason|construct|build|tile|labou?r/i, 'brick-wall'],
+];
+function skillIconName(categoryName) {
+  const hit = SKILL_ICONS.find(([re]) => re.test(categoryName || ''));
+  return hit ? hit[1] : 'briefcase';
+}
+
+// Teardrop map pin with a white icon inside (Google-Maps style)
+function mapPinIcon(iconName, color) {
+  return L.divIcon({
+    className: 'hn-pin-wrap',
+    html:
+      '<div class="hn-pin">' +
+        '<svg viewBox="0 0 40 52" width="38" height="49" aria-hidden="true">' +
+          '<path d="M20 1.5C9.7 1.5 1.5 9.7 1.5 20c0 13.2 18.5 30.5 18.5 30.5S38.5 33.2 38.5 20C38.5 9.7 30.3 1.5 20 1.5z" fill="' + color + '" stroke="#fff" stroke-width="2.5"/>' +
+        '</svg>' +
+        '<i data-lucide="' + iconName + '"></i>' +
+      '</div>',
+    iconSize: [38, 49],
+    iconAnchor: [19, 49],
+    popupAnchor: [0, -44],
+  });
 }
 
 function renderWorkers() {

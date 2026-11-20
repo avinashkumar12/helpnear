@@ -7,8 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/app/style.css"/>
+  <link rel="stylesheet" href="/app/redesign.css"/>
   <link rel="manifest" href="/app/manifest.json"/>
-  <meta name="theme-color" content="#FF6B35"/>
+  <meta name="theme-color" content="#0c0c0e"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -137,7 +138,13 @@
   <div class="mob-header" id="mob-header">
     <div class="mob-greeting-row">
       <span class="mob-greeting-text" id="mob-greeting">Good morning 👋</span>
-      <button class="mob-loc-btn" onclick="openLocationModal()"><i data-lucide="map-pin"></i><span id="mob-loc-label">Set location</span></button>
+      <div class="mob-greeting-actions">
+        <div class="mob-lang-toggle">
+          <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
+          <button class="lang-btn" data-lang="hi" onclick="setLang('hi')">हि</button>
+        </div>
+        <button class="mob-loc-btn" onclick="openLocationModal()"><i data-lucide="map-pin"></i><span id="mob-loc-label">Set location</span></button>
+      </div>
     </div>
     <div class="mob-search-row">
       <span class="mob-search-icon"><i data-lucide="search"></i></span>
@@ -244,21 +251,6 @@
     <i data-lucide="hard-hat"></i> <span>Become a Worker</span>
   </button>
 
-  <!-- Mobile bottom nav -->
-  <nav class="bottom-nav" id="bottom-nav">
-    <button class="bottom-nav-item active" id="bnav-home" onclick="showPage('home')">
-      <i data-lucide="home"></i>Home
-    </button>
-    <button class="bottom-nav-item" id="bnav-search" onclick="document.getElementById('search-input').focus()">
-      <i data-lucide="search"></i>Search
-    </button>
-    <button class="bottom-nav-item" id="bnav-profile" onclick="showPage('profile')">
-      <i data-lucide="user"></i>Profile
-    </button>
-    <button class="bottom-nav-item" id="bnav-worker" onclick="showPage('worker-dashboard')">
-      <i data-lucide="briefcase"></i>Work
-    </button>
-  </nav>
 </div>
 
 <!-- ═══ WORKER PROFILE PAGE ═══ -->
@@ -434,12 +426,12 @@
       </div>
     </div>
 
-    <div style="margin-top:.75rem">
-      <button id="wd-share-btn" class="btn btn-sm" onclick="shareWorkerProfile()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:.35rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem">
-        <i data-lucide="share-2" style="width:14px;height:14px"></i> Share Profile
+    <div class="wd-hero-actions">
+      <button id="wd-share-btn" class="wd-hero-btn" onclick="shareWorkerProfile()">
+        <i data-lucide="share-2"></i> Share Profile
       </button>
-      <button class="btn btn-sm" onclick="showProfileQr()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:.35rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem">
-        <i data-lucide="qr-code" style="width:14px;height:14px"></i> QR Code
+      <button class="wd-hero-btn" onclick="showProfileQr()">
+        <i data-lucide="qr-code"></i> QR Code
       </button>
     </div>
 
@@ -557,6 +549,22 @@
   </div>
 </div>
 
+<!-- Mobile bottom nav -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bottom-nav-item active" id="bnav-home" onclick="showPage('home')">
+    <i data-lucide="home"></i>Home
+  </button>
+  <button class="bottom-nav-item" id="bnav-search" onclick="focusSearch()">
+    <i data-lucide="search"></i>Search
+  </button>
+  <button class="bottom-nav-item" id="bnav-profile" onclick="showPage('profile')">
+    <i data-lucide="user"></i>Profile
+  </button>
+  <button class="bottom-nav-item" id="bnav-worker" onclick="showPage('worker-dashboard')">
+    <i data-lucide="briefcase"></i>Work
+  </button>
+</nav>
+
 <!-- Complaint Modal -->
 <div id="complaint-modal-overlay" class="complaint-overlay hidden" onclick="if(event.target===this)closeComplaintModal()">
   <div class="complaint-modal">
@@ -658,6 +666,15 @@
 <!-- Global Toast -->
 <div id="global-toast" class="global-toast hidden"></div>
 
+<script>
+  // Bottom-nav "Search": go home, then focus whichever search box is visible
+  function focusSearch() {
+    if (!document.getElementById('page-home').classList.contains('active')) showPage('home');
+    var m = document.getElementById('mob-search-input'), d = document.getElementById('search-input');
+    var el = (m && m.offsetParent) ? m : d;
+    if (el) { el.scrollIntoView({block:'center'}); el.focus(); }
+  }
+</script>
 <script src="/app/app.js"></script>
 <script src="/app/worker-extras.js"></script>
 <script src="/app/i18n-extra.js"></script>
