@@ -1,4 +1,4 @@
-const CACHE = 'helpernear-v9';
+const CACHE = 'helpernear-v10';
 const STATIC = [
   '/app/',
   '/app/index.html',
@@ -65,6 +65,23 @@ self.addEventListener('fetch', e => {
     return;
   }
 
+  // App code (JS/CSS): network-first so a deploy is picked up immediately.
+  // The cache is only an offline fallback. (Cache-first here left users stuck
+  // on stale app.js after updates.)
+  if (url.origin === self.location.origin && /\.(js|css)$/.test(url.pathname)) {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Everything else (images, fonts, manifest): cache-first
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
       if (res && res.status === 200 && res.type === 'basic') {
