@@ -292,6 +292,7 @@ async function loadAppBanners() {
     }
 
     wrap.style.display = '';
+    placeBanners();
   } catch (_) {}
 }
 
@@ -439,7 +440,8 @@ function renderCategoryChips(cats) {
     const btn = document.createElement('button');
     btn.className = 'chip';
     btn.dataset.catId = cat.id || '';
-    btn.textContent = (cat.icon ? cat.icon + ' ' : '') + (cat.name || '');
+    btn.innerHTML = '<i data-lucide="' + skillIconName(cat.name) + '"></i>';
+    btn.appendChild(document.createTextNode(cat.name || ''));
     btn.onclick = () => {
       document.querySelectorAll('#cat-chips .chip').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
@@ -448,6 +450,7 @@ function renderCategoryChips(cats) {
     };
     container.appendChild(btn);
   });
+  if (window.lucide) lucide.createIcons();
   container.querySelector('[data-cat=""]').onclick = () => {
     document.querySelectorAll('#cat-chips .chip').forEach(c => c.classList.remove('active'));
     container.querySelector('[data-cat=""]').classList.add('active');
@@ -827,6 +830,8 @@ function mapPinIcon(iconName, color) {
 }
 
 function renderWorkers() {
+  updateHeroLive();
+  updateChipCounts();
   if (_currentView === 'map') { initMap(); return; }
 
   const query    = (document.getElementById('search-input')?.value || '').toLowerCase();
@@ -836,6 +841,7 @@ function renderWorkers() {
 
   let filtered = allWorkers.filter(w => {
     if (avOnly && w.status !== 'AVAILABLE') return false;
+    if (_favOnly && !isFav(w.id || w._id)) return false;
     if (minRat > 0 && (w.averageRating == null || Number(w.averageRating) < minRat)) return false;
     if (query) {
       const name = (w.user?.name || '').toLowerCase();
@@ -855,6 +861,8 @@ function renderWorkers() {
 
   const grid = document.getElementById('workers-grid');
   document.getElementById('results-count').textContent = filtered.length + ' ' + t('home.found');
+  const showEl = document.getElementById('showing-text');
+  if (showEl) showEl.innerHTML = 'Showing <b>' + filtered.length + '</b> worker' + (filtered.length === 1 ? '' : 's');
   const catName = selectedCategoryId ? (categoriesCache.find(c => c.id === selectedCategoryId)?.name || 'Workers') : null;
   document.getElementById('results-title').textContent = catName
     ? catName + (currentLat ? ' Nearby' : ' Workers')
@@ -882,6 +890,9 @@ function buildWorkerCard(w) {
   const color = avatarColor(name);
   const card = document.createElement('div');
   card.className = 'worker-card';
+  const wid = w.id || w._id;
+  const exp = w.experienceYears != null && w.experienceYears !== '' ? w.experienceYears + ' yrs exp' : '';
+  const tags = (Array.isArray(w.services) ? w.services : []).map(x => x && x.name).filter(Boolean).slice(0, 3);
   const statusLabel = { AVAILABLE: t('worker.available'), BUSY: t('worker.busy'), OFFLINE: t('worker.offline_status') }[status] || status;
   card.innerHTML = `
     <div class="card-header">
@@ -891,23 +902,106 @@ function buildWorkerCard(w) {
           <span class="card-name">${escHtml(name)}</span>
           ${w.isVerified ? `<span class="verified-badge"><i data-lucide="shield-check"></i> ${t('worker.verified')}</span>` : ''}
         </div>
-        <div class="card-cats">${escHtml(cats) || t('worker.general')}</div>
+        <div class="card-cats">${escHtml(cats) || t('worker.general')}${exp ? ' <i class="dot-sep"></i> ' + escHtml(exp) : ''}</div>
       </div>
+      <button class="fav-btn ${isFav(wid) ? 'on' : ''}" title="Save" onclick="event.stopPropagation();toggleFav('${wid}', this)"><i data-lucide="heart"></i></button>
     </div>
     <div class="card-divider"></div>
     <div class="card-meta">
-      ${dist ? `<span class="card-dist"><i data-lucide="map-pin"></i> ${dist}</span>` : ''}
       ${avgRating ? `<span class="card-rating">★ ${avgRating}</span>${reviewCount ? `<span class="card-reviews">(${reviewCount})</span>` : ''}` : `<span class="card-rating no-rating">${t('worker.no_reviews')}</span>`}
       ${w.priceRange ? `<span class="card-price">${escHtml(w.priceRange)}</span>` : ''}
-      ${timeAgo(w.lastActiveAt) ? `<span class="card-active">${timeAgo(w.lastActiveAt)}</span>` : ''}
+      ${dist ? `<span class="card-dist"><i data-lucide="navigation"></i> ${dist} away</span>` : ''}
     </div>
+    <div class="card-status-row">
+      <span class="card-state ${status}">${status === 'AVAILABLE' ? t('worker.available') + ' Now' : statusLabel}</span>
+      ${timeAgo(w.lastActiveAt) && status !== 'AVAILABLE' ? `<span class="card-active">${timeAgo(w.lastActiveAt)}</span>` : ''}
+    </div>
+    ${tags.length ? `<div class="card-tags">${tags.map(x => '<span>' + escHtml(x) + '</span>').join('')}</div>` : ''}
     <div class="card-actions">
       <a href="tel:${phone}" class="card-call" onclick="event.stopPropagation();logContactAttempt('${w.id||w._id}','call')"><i data-lucide="phone"></i> ${t('worker.call')}</a>
       <a href="https://wa.me/${phone.replace(/\D/g,'')}" class="card-wa" target="_blank" onclick="event.stopPropagation();logContactAttempt('${w.id||w._id}','whatsapp')"><i data-lucide="message-circle"></i> ${t('worker.whatsapp')}</a>
-      <button class="card-view" onclick="event.stopPropagation();openWorkerProfile('${w.id||w._id}')">${t('worker.view_profile')}</button>
+      <button class="card-view" onclick="event.stopPropagation();openWorkerProfile('${w.id||w._id}')">Profile</button>
     </div>`;
   return card;
 }
+
+// ── Favourites / theme / quick need / live hero ─────────
+let _favOnly = false;
+function favList() { try { return JSON.parse(localStorage.getItem('hn_favs') || '[]'); } catch { return []; } }
+function isFav(id) { return favList().includes(id); }
+function toggleFav(id, btn) {
+  let f = favList();
+  f = f.includes(id) ? f.filter(x => x !== id) : f.concat(id);
+  try { localStorage.setItem('hn_favs', JSON.stringify(f)); } catch {}
+  if (btn) btn.classList.toggle('on', f.includes(id));
+  updateFavCount();
+  if (_favOnly) renderWorkers();
+}
+function updateFavCount() {
+  const n = favList().length, el = document.getElementById('fav-count');
+  if (el) { el.textContent = n; el.style.display = n ? '' : 'none'; }
+  document.getElementById('fav-btn')?.classList.toggle('active', _favOnly);
+}
+function toggleFavFilter() {
+  _favOnly = !_favOnly;
+  updateFavCount();
+  renderWorkers();
+  if (_favOnly && !favList().length) showToast('Tap the heart on a worker to save them.', '');
+}
+function applyTheme(th) {
+  document.documentElement.setAttribute('data-theme', th);
+  const b = document.getElementById('theme-btn');
+  if (b) { b.innerHTML = '<i data-lucide="' + (th === 'light' ? 'moon' : 'sun') + '"></i>'; if (window.lucide) lucide.createIcons(); }
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = th === 'light' ? '#f6f6f8' : '#0c0c0e';
+}
+function toggleTheme() {
+  const th = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  try { localStorage.setItem('hn_theme', th); } catch {}
+  applyTheme(th);
+}
+function quickNeed() {
+  const av = document.getElementById('filter-available'); if (av) av.checked = true;
+  const so = document.getElementById('filter-sort'); if (so) so.value = 'distance';
+  if (currentLat === null) { openLocationModal(); return; }
+  searchWorkers();
+  document.querySelector('.results-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function updateHeroLive() {
+  const total = allWorkers.length, avail = allWorkers.filter(w => w.status === 'AVAILABLE').length;
+  const live = document.getElementById('hero-live'), lt = document.getElementById('hero-live-text');
+  if (live && lt) { live.style.display = avail ? '' : 'none'; lt.textContent = avail + ' Available Right Now'; }
+  const wEl = document.getElementById('hstat-workers'); if (wEl && total) wEl.textContent = total;
+  const sub = document.getElementById('hero-sub');
+  const loc = document.getElementById('loc-text')?.textContent || '';
+  if (sub) sub.innerHTML = 'Verified, trusted, available — just a tap away' + (currentLat !== null && loc && !/set location/i.test(loc) ? ' in <b>' + escHtml(loc) + '</b>' : '') + '.';
+}
+let _catCounts = null;
+function updateChipCounts() {
+  if (!selectedCategoryId) {
+    _catCounts = { _all: allWorkers.length };
+    allWorkers.forEach(w => (w.categories || []).forEach(c => { const id = c.category?.id || c.categoryId || c.id; if (id) _catCounts[id] = (_catCounts[id] || 0) + 1; }));
+  }
+  if (!_catCounts) return;
+  document.querySelectorAll('#cat-chips .chip').forEach(ch => {
+    const id = ch.dataset.catId, n = id ? _catCounts[id] : _catCounts._all;
+    let b = ch.querySelector('.chip-count');
+    if (n == null) { if (b) b.remove(); return; }
+    if (!b) { b = document.createElement('span'); b.className = 'chip-count'; ch.appendChild(b); }
+    b.textContent = n;
+  });
+}
+// Offers sit beside the hero on desktop, below the filters on mobile
+function placeBanners() {
+  const wrap = document.getElementById('app-banners'), slot = document.getElementById('hero-offers-slot');
+  if (!wrap || !slot) return;
+  if (!placeBanners.home) { placeBanners.home = document.createElement('span'); placeBanners.home.hidden = true; wrap.before(placeBanners.home); }
+  if (window.matchMedia('(min-width: 769px)').matches) { if (wrap.parentNode !== slot) slot.appendChild(wrap); }
+  else if (wrap.parentNode === slot) placeBanners.home.after(wrap);
+  slot.classList.toggle('has-offers', wrap.parentNode === slot && wrap.style.display !== 'none');
+}
+window.addEventListener('resize', () => placeBanners());
+try { applyTheme(localStorage.getItem('hn_theme') === 'light' ? 'light' : 'dark'); } catch { applyTheme('dark'); }
+document.addEventListener('DOMContentLoaded', () => { applyTheme(document.documentElement.getAttribute('data-theme') || 'dark'); updateFavCount(); placeBanners(); });
 
 // ══════════════════════════════
 // WORKER PROFILE VIEW

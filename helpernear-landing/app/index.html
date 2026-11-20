@@ -108,6 +108,11 @@
   <nav class="topnav">
     <div class="topnav-inner">
       <div class="nav-logo"><img src="/assets/logo-light.svg" alt="HelperNear" style="height:28px;width:auto;vertical-align:middle;"/></div>
+      <button class="loc-btn" id="loc-btn" onclick="openLocationModal()">
+        <span id="loc-icon"><i data-lucide="map-pin"></i></span>
+        <span id="loc-text" data-i18n="home.set_location">Set Location</span>
+        <i data-lucide="chevron-down" class="loc-chev"></i>
+      </button>
       <div class="nav-search-wrap">
         <span class="search-icon-inside"><i data-lucide="search"></i></span>
         <input id="search-input" type="text" placeholder="Search by name or skill..." data-i18n-ph="home.search_placeholder" oninput="renderWorkers()"/>
@@ -117,10 +122,8 @@
           <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
           <button class="lang-btn" data-lang="hi" onclick="setLang('hi')">हि</button>
         </div>
-        <button class="loc-btn" id="loc-btn" onclick="openLocationModal()">
-          <span id="loc-icon"><i data-lucide="map-pin"></i></span>
-          <span id="loc-text" data-i18n="home.set_location">Set Location</span>
-        </button>
+        <button class="nav-icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme"><i data-lucide="sun"></i></button>
+        <button class="nav-icon-btn" id="fav-btn" onclick="toggleFavFilter()" title="Saved workers"><i data-lucide="heart"></i><span class="nav-badge" id="fav-count" style="display:none">0</span></button>
         <div class="avatar-wrap">
           <div class="avatar" id="nav-avatar" onclick="toggleMenu()">U</div>
           <div class="dropdown hidden" id="nav-dropdown">
@@ -155,16 +158,19 @@
   <div class="home-hero">
     <div class="home-hero-inner">
       <div class="hero-text">
+        <div class="hero-top-row">
+          <span class="hero-live" id="hero-live" style="display:none"><i></i><span id="hero-live-text"></span></span>
+          <button class="hero-urgent" onclick="quickNeed()"><i data-lucide="zap"></i> Quick Need / Urgent Help</button>
+        </div>
         <h1 id="hero-greeting">Find skilled workers near you</h1>
-        <p>Verified, trusted, available — just a tap away</p>
+        <p id="hero-sub">Verified, trusted, available — just a tap away</p>
+        <div class="hero-stats">
+          <div class="hstat"><span class="hstat-num" id="hstat-workers">—</span><span class="hstat-label">Workers Nearby</span></div>
+          <div class="hstat"><span class="hstat-num hstat-star">4.8★</span><span class="hstat-label">Avg Rating</span></div>
+          <div class="hstat"><span class="hstat-num hstat-green" id="hstat-cats">—</span><span class="hstat-label">Service Categories</span></div>
+        </div>
       </div>
-      <div class="hero-stats">
-        <div class="hstat"><span class="hstat-num" id="hstat-workers">—</span><span class="hstat-label">Workers</span></div>
-        <div class="hstat-div"></div>
-        <div class="hstat"><span class="hstat-num" id="hstat-cats">—</span><span class="hstat-label">Categories</span></div>
-        <div class="hstat-div"></div>
-        <div class="hstat"><span class="hstat-num">4.8★</span><span class="hstat-label">Avg Rating</span></div>
-      </div>
+      <div class="hero-offers" id="hero-offers-slot"></div>
     </div>
   </div>
 
@@ -176,14 +182,6 @@
       <div class="chips" id="cat-chips">
         <button class="chip active" data-cat="">All</button>
       </div>
-      <div class="radius-wrap">
-        <select id="radius-sel" onchange="searchWorkers()">
-          <option value="2">2 km</option>
-          <option value="5" selected>5 km</option>
-          <option value="10">10 km</option>
-          <option value="20">20 km</option>
-        </select>
-      </div>
     </div>
 
     <!-- Advanced filters row -->
@@ -193,6 +191,16 @@
         <span class="adv-toggle-track"></span>
         <span data-i18n="filter.available_only">Available only</span>
       </label>
+
+      <div class="adv-filter-group radius-wrap">
+        <span class="adv-filter-label adv-pin"><i data-lucide="map-pin"></i></span>
+        <select id="radius-sel" onchange="searchWorkers()" class="adv-select">
+          <option value="2">Within 2 km</option>
+          <option value="5" selected>Within 5 km</option>
+          <option value="10">Within 10 km</option>
+          <option value="20">Within 20 km</option>
+        </select>
+      </div>
 
       <div class="adv-filter-group">
         <span class="adv-filter-label">★</span>
@@ -210,6 +218,14 @@
           <option value="rating"   data-i18n-opt="filter.sort_rating">Top rated</option>
           <option value="reviews"  data-i18n-opt="filter.sort_reviews">Most reviewed</option>
         </select>
+      </div>
+
+      <div class="adv-right">
+        <span class="showing-text" id="showing-text"></span>
+        <div class="view-toggle">
+          <button class="view-btn active" id="btn-list-view" onclick="switchView('list')" title="List View"><i data-lucide="list"></i></button>
+          <button class="view-btn" id="btn-map-view" onclick="switchView('map')" title="Map View"><i data-lucide="map"></i></button>
+        </div>
       </div>
     </div>
 
@@ -230,10 +246,6 @@
       <div class="results-header">
         <h2 id="results-title" data-i18n="home.nearby">Nearby Workers</h2>
         <span id="results-count" class="count-badge"></span>
-        <div class="view-toggle">
-          <button class="view-btn active" id="btn-list-view" onclick="switchView('list')" title="List View"><i data-lucide="list"></i></button>
-          <button class="view-btn" id="btn-map-view" onclick="switchView('map')" title="Map View"><i data-lucide="map"></i></button>
-        </div>
       </div>
       <div id="workers-grid" class="workers-grid">
         <div class="empty-state">
